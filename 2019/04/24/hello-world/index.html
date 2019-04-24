@@ -309,6 +309,24 @@
   
 
   
+  <div id="gitment-ctn"></div> 
+<link rel="stylesheet" href="//imsun.github.io/gitment/style/default.css">
+<script src="//imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+var gitment = new Gitment({
+  //id: "http://yoursite.com/2019/04/24/hello-world/",
+  id: 'Wed Apr 24 2019 10:39:05 GMT+0800'
+  owner: 'gavin026',
+  repo: 'mycomments',
+  oauth: {
+    client_id: 'bf0b9038ebf499808764',
+    client_secret: '117a33203a2e859c0660b932ea752669dd448844',
+  },
+})
+gitment.render('gitment-ctn')
+</script>
+
+  
 
   <div id="gitalk-container" style="padding: 0px 30px 0px 30px;"></div> 
 
