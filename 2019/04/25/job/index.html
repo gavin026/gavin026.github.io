@@ -17,7 +17,7 @@
 <meta property="og:description" content="本章将从kubernetes源码层次，对Job内幕原理进行大揭秘。">
 <meta property="og:locale" content="default">
 <meta property="og:image" content="http://yoursite.com/image/kube-controller.jpeg">
-<meta property="og:updated_time" content="2019-04-26T08:54:16.238Z">
+<meta property="og:updated_time" content="2019-04-26T09:10:26.196Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kubernetes之Job技术内幕">
 <meta name="twitter:description" content="本章将从kubernetes源码层次，对Job内幕原理进行大揭秘。">
@@ -62,18 +62,14 @@
 			
 				<li><a href="/">主页</a></li>
 	        
+				<li><a href="/archives">所有文章</a></li>
+	        
 				<li><a href="/categories/kubernetes">k8s</a></li>
 	        
 			</ul>
 		</nav>
 		<nav class="header-smart-menu">
     		
-    			
-    			<a q-on="click: openSlider(e, 'innerArchive')" href="javascript:void(0)">所有文章</a>
-    			
-            
-    			
-    			<a q-on="click: openSlider(e, 'aboutme')" href="javascript:void(0)">关于我</a>
     			
             
 		</nav>
@@ -112,6 +108,8 @@
 			
 				
 			
+				
+			
 			
 			
 			<nav class="header-nav">
@@ -125,12 +123,14 @@
 			</nav>
 
 			<nav class="header-menu js-header-menu">
-				<ul style="width: 50%">
+				<ul style="width: 70%">
 				
 				
-					<li style="width: 50%"><a href="/">主页</a></li>
+					<li style="width: 33.333333333333336%"><a href="/">主页</a></li>
 		        
-					<li style="width: 50%"><a href="/categories/kubernetes">k8s</a></li>
+					<li style="width: 33.333333333333336%"><a href="/archives">所有文章</a></li>
+		        
+					<li style="width: 33.333333333333336%"><a href="/categories/kubernetes">k8s</a></li>
 		        
 				</ul>
 			</nav>
@@ -165,8 +165,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>本章将从kubernetes源码层次，对Job内幕原理进行大揭秘。</p>
-<a id="more"></a>
+        <p>本章将从kubernetes源码层次，对Job内幕原理进行大揭秘。<br><a id="more"></a></p>
 <h2 id="前篇"><a href="#前篇" class="headerlink" title="前篇"></a>前篇</h2><h3 id="Before-you-begin"><a href="#Before-you-begin" class="headerlink" title="Before you begin"></a>Before you begin</h3><p>在登堂入室之前，需要具备如下知识：</p>
 <ul>
 <li>golang命令行库：Cobra<br>推荐<a href="https://o-my-chenjian.com/2017/09/20/Using-Cobra-With-Golang/" target="_blank" rel="noopener">chenjian</a>和<a href="https://jsharkc.github.io/2017/07/17/cobra%E5%85%A5%E9%97%A8%E5%B0%8F%E6%95%99%E7%A8%8B/" target="_blank" rel="noopener">Jsharkc</a>两篇快速入门教程。</li>
@@ -444,7 +443,7 @@ gitalk.render('gitalk-container')
 		open_in_new: true,
 		toc_hide_index: true,
 		root: "/",
-		innerArchive: true,
+		innerArchive: false,
 		showTags: true
 	}
 </script>
@@ -461,12 +460,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
     
     
       
-      
-      
-    
-      
-      
-      
     
     
 
@@ -474,89 +467,14 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
     
     
       
-      <li style="width: 50%" q-on="click: openSlider(e, 'innerArchive')"><a href="javascript:void(0)" q-class="active:innerArchive">所有文章</a></li>
-      
-        
-      
-      <li style="width: 50%" q-on="click: openSlider(e, 'aboutme')"><a href="javascript:void(0)" q-class="active:aboutme">关于我</a></li>
-      
         
     </ul>
   </div>
   <div class="tools-wrap">
     
-    	<section class="tools-section tools-section-all" q-show="innerArchive">
-        <div class="search-wrap">
-          <input class="search-ipt" q-model="search" type="text" placeholder="find something…">
-          <i class="icon-search icon" q-show="search|isEmptyStr"></i>
-          <i class="icon-close icon" q-show="search|isNotEmptyStr" q-on="click:clearChose(e)"></i>
-        </div>
-        <div class="widget tagcloud search-tag">
-          <p class="search-tag-wording">tag:</p>
-          <label class="search-switch">
-            <input type="checkbox" q-on="click:toggleTag(e)" q-attr="checked:showTags">
-          </label>
-          <ul class="article-tag-list" q-show="showTags">
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">kube-controller-manager</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">job</a>
-              </li>
-            
-            <div class="clearfix"></div>
-          </ul>
-        </div>
-        <ul class="search-ul">
-          <p q-show="jsonFail" style="padding: 20px; font-size: 12px;">
-            缺失模块。<br>1、请确保node版本大于6.2<br>2、在博客根目录（注意不是yilia根目录）执行以下命令：<br> npm i hexo-generator-json-content --save<br><br>
-            3、在根目录_config.yml里添加配置：
-<pre style="font-size: 12px;" q-show="jsonFail">
-  jsonContent:
-    meta: false
-    pages: false
-    posts:
-      title: true
-      date: true
-      path: true
-      text: false
-      raw: false
-      content: false
-      slug: false
-      updated: false
-      comments: false
-      link: false
-      permalink: false
-      excerpt: false
-      categories: false
-      tags: true
-</pre>
-          </p>
-          <li class="search-li" q-repeat="items" q-show="isShow">
-            <a q-attr="href:path|urlformat" class="search-title"><i class="icon-quo-left icon"></i><span q-text="title"></span></a>
-            <p class="search-time">
-              <i class="icon-calendar icon"></i>
-              <span q-text="date|dateformat"></span>
-            </p>
-            <p class="search-tag">
-              <i class="icon-price-tags icon"></i>
-              <span q-repeat="tags" q-on="click:choseTag(e, name)" q-text="name|tagformat"></span>
-            </p>
-          </li>
-        </ul>
-    	</section>
-    
 
     
 
-    
-    	<section class="tools-section tools-section-me" q-show="aboutme">
-  	  	
-  	  		<div class="aboutme-wrap" id="js-aboutme">很惭愧&lt;br&gt;&lt;br&gt;只做了一点微小的工作&lt;br&gt;谢谢大家</div>
-  	  	
-    	</section>
     
   </div>
   
