@@ -147,7 +147,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2019/06/26/informer/">Informer机制详解</a>
+      <a class="article-title" href="/2019/06/26/informer/">大话Informer机制</a>
     </h1>
   
 
@@ -160,14 +160,13 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h2 id="List-Watch"><a href="#List-Watch" class="headerlink" title="List-Watch"></a>List-Watch</h2><p>Etcd 存储集群的数据信息，apiserver 作为统一入口，任何对数据的操作都必须经过 apiserver。客户端(kubelet/scheduler/ontroller-manager)通过 list-watch 监听 apiserver 中资源(pod/rs/rc 等等)的 create, update 和 delete 事件，并针对事件类型调用相应的事件处理函数。</p>
-<p>那么 list-watch 具体是什么呢，顾名思义，list-watch 有两部分组成，分别是 list 和 watch。list 非常好理解，就是调用资源的 list API 罗列资源，基于HTTP短链接实现；watch 则是调用资源的 watch API 监听资源变更事件，基于HTTP长链接实现.</p>
-<p>Informer 在初始化时，先调用 Kubernetes List API 获得某种 resource 的全部 Object，缓存在内存中; 然后，调用 Watch API 去 watch 这种 resource，去维护这份缓存; 最后，Informer 就不再调用 Kubernetes 的任何 API。</p>
-<h3 id="list"><a href="#list" class="headerlink" title="list"></a>list</h3><h3 id="watch"><a href="#watch" class="headerlink" title="watch"></a>watch</h3><h3 id="伪代码"><a href="#伪代码" class="headerlink" title="伪代码"></a>伪代码</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">event = watch.ResultChan()</span><br><span class="line"></span><br><span class="line"><span class="keyword">switch</span> event.<span class="keyword">type</span>: &#123;</span><br><span class="line">    <span class="keyword">case</span> Add: r.store.Add(event.Object)</span><br><span class="line">    <span class="keyword">case</span> Modified: r.store.Update(event.Object)</span><br><span class="line">    <span class="keyword">case</span> Deleted:  r.store.Delete(event.Object)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+        <p>Etcd 存储集群的数据信息，apiserver 作为统一入口，任何对数据的操作都必须经过 apiserver。客户端(kubelet/scheduler/ontroller-manager)通过 list-watch 监听 apiserver 中资源(pod/rs/rc 等等)的 create, update 和 delete 事件，并针对事件类型调用相应的事件处理函数。<br>
+        
+          <a class="article-more-a" href="/2019/06/26/informer/#more">more >></a>
+        
       
       
-    </div>
+    </p></div>
     <div class="article-info article-info-index">
       
       
@@ -180,7 +179,7 @@
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">informer</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">Informer</a>
         		</li>
       		
 		</ul>
@@ -416,6 +415,10 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">job</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">Informer</a>
               </li>
             
             <div class="clearfix"></div>
