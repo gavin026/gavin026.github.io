@@ -6,20 +6,15 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>k8s Informer机制源码揭秘 | luohua</title>
+  <title>Archives: 2019/7 | luohua</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="Etcd 存储集群的数据信息，apiserver 作为统一入口，任何对数据的操作都必须经过 apiserver。客户端(kubelet/scheduler/ontroller-manager)通过 list-watch 监听 apiserver 中资源(pod/rs/rc 等等)的 create, update 和 delete 事件，并针对事件类型调用相应的事件处理函数。">
-<meta name="keywords" content="kube-controller-manager,Informer">
-<meta property="og:type" content="article">
-<meta property="og:title" content="k8s Informer机制源码揭秘">
-<meta property="og:url" content="http://yoursite.com/2019/06/26/informer/index.html">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="luohua">
+<meta property="og:url" content="http://yoursite.com/archives/2019/07/index.html">
 <meta property="og:site_name" content="luohua">
-<meta property="og:description" content="Etcd 存储集群的数据信息，apiserver 作为统一入口，任何对数据的操作都必须经过 apiserver。客户端(kubelet/scheduler/ontroller-manager)通过 list-watch 监听 apiserver 中资源(pod/rs/rc 等等)的 create, update 和 delete 事件，并针对事件类型调用相应的事件处理函数。">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-06-28T07:24:27.241Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="k8s Informer机制源码揭秘">
-<meta name="twitter:description" content="Etcd 存储集群的数据信息，apiserver 作为统一入口，任何对数据的操作都必须经过 apiserver。客户端(kubelet/scheduler/ontroller-manager)通过 list-watch 监听 apiserver 中资源(pod/rs/rc 等等)的 create, update 和 delete 事件，并针对事件类型调用相应的事件处理函数。">
+<meta name="twitter:title" content="luohua">
   
     <link rel="alternative" href="/atom.xml" title="luohua" type="application/atom+xml">
   
@@ -143,106 +138,52 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-informer" class="article article-type-post " itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
+            
   
-    <h1 class="article-title" itemprop="name">
-      k8s Informer机制源码揭秘
+  
+    
+    
+      
+      
+      <section class="archives-wrap">
+        <div class="archive-year-wrap">
+          <a href="/archives/2019" class="archive-year">2019</a>
+        </div>
+        <div class="archives">
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      	<div class="article-meta">
+	      	<a href="/2019/07/31/kubectl/" class="archive-article-date">
+  	<time datetime="2019-07-31T02:28:02.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-07-31</time>
+</a>
+        </div>
+    	 
+  
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/2019/07/31/kubectl/">kubernetes源码赏析———kubectl</a>
     </h1>
   
 
-        
-        <a href="/2019/06/26/informer/" class="archive-article-date">
-  	<time datetime="2019-06-26T01:26:46.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-06-26</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Etcd 存储集群的数据信息，apiserver 作为统一入口，任何对数据的操作都必须经过 apiserver。客户端(kubelet/scheduler/ontroller-manager)通过 list-watch 监听 apiserver 中资源(pod/rs/rc 等等)的 create, update 和 delete 事件，并针对事件类型调用相应的事件处理函数。<br><a id="more"></a><br>那么 list-watch 具体是什么呢，顾名思义，list-watch 有两部分组成，分别是 list 和 watch。list 非常好理解，就是调用资源的 list API 罗列资源，基于HTTP短链接实现；watch 则是调用资源的 watch API 监听资源变更事件，基于HTTP长链接实现.</p>
-<p>Informer 在初始化时，先调用 Kubernetes List API 获得某种 resource 的全部 Object，缓存在内存中; 然后，调用 Watch API 去 watch 这种 resource，去维护这份缓存; 最后，Informer 就不再调用 Kubernetes 的任何 API。</p>
-<h3 id="list流程"><a href="#list流程" class="headerlink" title="list流程"></a>list流程</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 版本号设置为0</span></span><br><span class="line">options := metav1.ListOptions&#123;ResourceVersion: <span class="string">"0"</span>&#125;</span><br><span class="line"><span class="comment">// list接口</span></span><br><span class="line">list = Reflector.listerWatcher.List(options)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取版本号</span></span><br><span class="line">resourceVersion = listMetaInterface.GetResourceVersion()</span><br><span class="line"><span class="comment">// 将list的内容提取成对象列表</span></span><br><span class="line">items, err := meta.ExtractList(list)</span><br><span class="line"><span class="comment">// 将list中对象列表的内容和版本号存储到本地的缓存store中，并全量替换已有的store的内容。</span></span><br><span class="line">Reflector.syncWith(items, resourceVersion)   &lt;==&gt; Reflector.store.Replace(found <span class="keyword">range</span> items, resourceVersion)</span><br><span class="line"></span><br><span class="line"><span class="comment">//最后设置最新的资源版本号。</span></span><br><span class="line"></span><br><span class="line">Reflector.setLastSyncResourceVersion(resourceVersion)   &lt;==&gt; Reflector.lastSyncResourceVersion = resourceVersion</span><br></pre></td></tr></table></figure>
-<h3 id="watch流程"><a href="#watch流程" class="headerlink" title="watch流程"></a>watch流程</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">watch = Reflector.listerWatcher.Watch()     </span><br><span class="line"></span><br><span class="line">event = watch.ResultChan()</span><br><span class="line"></span><br><span class="line"><span class="keyword">switch</span> event.<span class="keyword">type</span>: &#123;</span><br><span class="line">    <span class="keyword">case</span> Add: Reflector.store.Add(event.Object)</span><br><span class="line">    <span class="keyword">case</span> Modified: Reflector.store.Update(event.Object)</span><br><span class="line">    <span class="keyword">case</span> Deleted:  Reflector.store.Delete(event.Object)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>watch把监听到的事件存到Reflector.store中<br>阅读源代码得知r.store由DeltaFIFO赋值：<br><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Reflector.store = controller.config.Queue = DeltaFIFO</span><br></pre></td></tr></table></figure></p>
-<p>DeltaFIFO 再Pop事件到 Controller 中</p>
-<p>Controller收到这个事件，会触发 Processor 的回调函数<br><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *controller)</span> <span class="title">processLoop</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		obj, err := c.config.Queue.Pop(PopProcessFunc(c.config.Process))</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *DeltaFIFO)</span> <span class="title">Pop</span><span class="params">(process PopProcessFunc)</span> <span class="params">(<span class="keyword">interface</span>&#123;&#125;, error)</span></span> &#123;</span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		id := f.queue[<span class="number">0</span>]</span><br><span class="line">		f.queue = f.queue[<span class="number">1</span>:]</span><br><span class="line">		item, ok := f.items[id]</span><br><span class="line">		<span class="keyword">if</span> !ok &#123;</span><br><span class="line">			<span class="keyword">continue</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="built_in">delete</span>(f.items, id)</span><br><span class="line">		err := process(item)   <span class="comment">//##########</span></span><br><span class="line">		<span class="keyword">return</span> item, err</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h3 id="process"><a href="#process" class="headerlink" title="process"></a>process</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">cfg := &amp;Config&#123;</span><br><span class="line">        ...</span><br><span class="line">		Process: s.HandleDeltas,</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *sharedIndexInformer)</span> <span class="title">HandleDeltas</span><span class="params">(obj <span class="keyword">interface</span>&#123;&#125;)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">	<span class="keyword">for</span> _, d := <span class="keyword">range</span> obj.(Deltas) &#123;</span><br><span class="line">		<span class="keyword">switch</span> d.Type &#123;</span><br><span class="line">		<span class="keyword">case</span> Sync, Added, Updated:</span><br><span class="line">			isSync := d.Type == Sync</span><br><span class="line">			s.cacheMutationDetector.AddObject(d.Object)</span><br><span class="line">			<span class="keyword">if</span> old, exists, err := s.indexer.Get(d.Object); err == <span class="literal">nil</span> &amp;&amp; exists &#123;</span><br><span class="line">				<span class="keyword">if</span> err := s.indexer.Update(d.Object); err != <span class="literal">nil</span> &#123;</span><br><span class="line">					<span class="keyword">return</span> err</span><br><span class="line">				&#125;</span><br><span class="line">				s.processor.distribute(updateNotification&#123;oldObj: old, newObj: d.Object&#125;, isSync)</span><br><span class="line">			&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">				<span class="keyword">if</span> err := s.indexer.Add(d.Object); err != <span class="literal">nil</span> &#123;</span><br><span class="line">					<span class="keyword">return</span> err</span><br><span class="line">				&#125;</span><br><span class="line">				s.processor.distribute(addNotification&#123;newObj: d.Object&#125;, isSync)</span><br><span class="line">			&#125;</span><br><span class="line">		<span class="keyword">case</span> Deleted:</span><br><span class="line">			<span class="keyword">if</span> err := s.indexer.Delete(d.Object); err != <span class="literal">nil</span> &#123;</span><br><span class="line">				<span class="keyword">return</span> err</span><br><span class="line">			&#125;</span><br><span class="line">			s.processor.distribute(deleteNotification&#123;oldObj: d.Object&#125;, <span class="literal">false</span>)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *sharedProcessor)</span> <span class="title">distribute</span><span class="params">(obj <span class="keyword">interface</span>&#123;&#125;, sync <span class="keyword">bool</span>)</span></span> &#123;</span><br><span class="line">	p.listenersLock.RLock()</span><br><span class="line">	<span class="keyword">defer</span> p.listenersLock.RUnlock()</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> sync &#123;</span><br><span class="line">		<span class="keyword">for</span> _, listener := <span class="keyword">range</span> p.syncingListeners &#123;</span><br><span class="line">			listener.add(obj)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		<span class="keyword">for</span> _, listener := <span class="keyword">range</span> p.listeners &#123;</span><br><span class="line">			listener.add(obj)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *processorListener)</span> <span class="title">add</span><span class="params">(notification <span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</span><br><span class="line">	p.addCh &lt;- notification</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="Processor"><a href="#Processor" class="headerlink" title="Processor"></a>Processor</h3><p>processor的主要功能就是记录了所有的回调函数实例(即 ResourceEventHandler 实例)，并负责触发这些函数。在sharedIndexInformer.Run部分会调用processor.run。</p>
-<p>流程：</p>
-<p>listenser的add函数负责将notify装进 pendingNotifications (参加上面一个代码块)<br>pop函数取出pendingNotifications的第一个nofify,输出到 nextCh channel。<br>run函数则负责取出notify，然后根据notify的类型(增加、删除、更新)触发相应的处理函数，这些函数是在不同的NewXxxcontroller实现中注册的。</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wg.StartWithChannel(processorStopCh, s.processor.run)</span><br></pre></td></tr></table></figure>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *sharedProcessor)</span> <span class="title">run</span><span class="params">(stopCh &lt;-<span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;)</span></span> &#123;</span><br><span class="line">	<span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="keyword">for</span> _, listener := <span class="keyword">range</span> p.listeners &#123;</span><br><span class="line">			p.wg.Start(listener.run)</span><br><span class="line">			p.wg.Start(listener.pop)</span><br><span class="line">		&#125;</span><br><span class="line">		p.listenersStarted = <span class="literal">true</span></span><br><span class="line">	&#125;()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *processorListener)</span> <span class="title">pop</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> nextCh <span class="keyword">chan</span>&lt;- <span class="keyword">interface</span>&#123;&#125;</span><br><span class="line">	<span class="keyword">var</span> notification <span class="keyword">interface</span>&#123;&#125;</span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		<span class="keyword">select</span> &#123;</span><br><span class="line">		<span class="keyword">case</span> nextCh &lt;- notification:</span><br><span class="line">			<span class="keyword">var</span> ok <span class="keyword">bool</span></span><br><span class="line">			notification, ok = p.pendingNotifications.ReadOne()</span><br><span class="line">			<span class="keyword">if</span> !ok &#123; <span class="comment">// Nothing to pop</span></span><br><span class="line">				nextCh = <span class="literal">nil</span> </span><br><span class="line">			&#125;</span><br><span class="line">		<span class="keyword">case</span> notificationToAdd, ok := &lt;-p.addCh:</span><br><span class="line">			<span class="keyword">if</span> !ok &#123;</span><br><span class="line">				<span class="keyword">return</span></span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span> notification == <span class="literal">nil</span> &#123; </span><br><span class="line">				notification = notificationToAdd</span><br><span class="line">				nextCh = p.nextCh</span><br><span class="line">			&#125; <span class="keyword">else</span> &#123; </span><br><span class="line">				p.pendingNotifications.WriteOne(notificationToAdd)</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *processorListener)</span> <span class="title">run</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">for</span> next := <span class="keyword">range</span> p.nextCh &#123;</span><br><span class="line">        <span class="keyword">switch</span> notification := next.(<span class="keyword">type</span>) &#123;</span><br><span class="line">            <span class="keyword">case</span> updateNotification:</span><br><span class="line">                p.handler.OnUpdate(notification.oldObj, notification.newObj)</span><br><span class="line">            <span class="keyword">case</span> addNotification:</span><br><span class="line">                p.handler.OnAdd(notification.newObj)</span><br><span class="line">            <span class="keyword">case</span> deleteNotification:</span><br><span class="line">                p.handler.OnDelete(notification.oldObj)  </span><br><span class="line">        &#125;   </span><br><span class="line">    &#125;	</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>NewXxxcontroller实现中注册函数OnUpdate、OnAdd、Ondelete等函数逻辑可以参见另外一篇博客：[kubernetes之Job技术内幕]（<a href="https://luohua13.github.io/2019/04/25/job/" target="_blank" rel="noopener">https://luohua13.github.io/2019/04/25/job/</a>) 进行具体的分析。</p>
-<h3 id="二级缓存"><a href="#二级缓存" class="headerlink" title="二级缓存"></a>二级缓存</h3><p>二级缓存属于 Informer 的底层缓存机制，这两级缓存分别是 DeltaFIFO 和 LocalStore。</p>
-<p>这两级缓存的用途各不相同。DeltaFIFO 用来存储 Watch API 返回的各种事件 ，LocalStore 只会被 Lister 的 List/Get 方法访问 。<br>虽然 Informer 和 Kubernetes 之间没有 resync 机制，但 Informer 内部的这两级缓存之间存在 resync 机制。</p>
-<h3 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h3><p>关于二级缓存中的localStore代码部分还不是很明确，本人猜想LocalStore是经过sharedIndexInformer.Indexer处理的，具体可见HandleDeltas函数。各位大侠若有这方面的正确理解可在下方留言。</p>
-<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3><ul>
-<li><a href="https://www.huweihuang.com/kubernetes-notes/code-analysis/kube-controller-manager/sharedIndexInformer.html" target="_blank" rel="noopener">https://www.huweihuang.com/kubernetes-notes/code-analysis/kube-controller-manager/sharedIndexInformer.html</a></li>
-<li><a href="http://wsfdl.com/kubernetes/2019/01/10/list_watch_in_k8s.html" target="_blank" rel="noopener">http://wsfdl.com/kubernetes/2019/01/10/list_watch_in_k8s.html</a></li>
-<li><a href="https://caicloud.io/blog/5a1b83a975d69a0681e19584" target="_blank" rel="noopener">https://caicloud.io/blog/5a1b83a975d69a0681e19584</a></li>
-</ul>
-
-      
-      
-        <div class="page-reward">
-          <a href="javascript:;" class="page-reward-btn tooltip-top">
-            <div class="tooltip tooltip-east">
-            <span class="tooltip-item">
-              赏
-            </span>
-            <span class="tooltip-content">
-              <span class="tooltip-text">
-                <span class="tooltip-inner">
-                  <p class="reward-p"><i class="icon icon-quo-left"></i>小小意思，意思意思～<i class="icon icon-quo-right"></i></p>
-                  <div class="reward-box">
-                    
-                    <div class="reward-box-item">
-                      <img class="reward-img" src="/alipay.jpeg">
-                      <span class="reward-type">支付宝</span>
-                    </div>
-                    
-                    
-                    <div class="reward-box-item">
-                      <img class="reward-img" src="/wechat.jpeg">
-                      <span class="reward-type">微信</span>
-                    </div>
-                    
-                  </div>
-                </span>
-              </span>
-            </span>
-          </div>
-          </a>
-        </div>
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
+        <div class="article-info info-on-right">
+          
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">kube-controller-manager</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">kubectl</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">Informer</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">Factory Method Pattern</a>
         		</li>
       		
 		</ul>
 	</div>
 
-      
+          
 	<div class="article-category tagcloud">
 		<i class="icon-book icon"></i>
 		<ul class="article-tag-list">
@@ -255,153 +196,17 @@
 	</div>
 
 
-      
-
-      
-        
-<div class="share-btn share-icons tooltip-left">
-  <div class="tooltip tooltip-east">
-    <span class="tooltip-item">
-      <a href="javascript:;" class="share-sns share-outer">
-        <i class="icon icon-share"></i>
-      </a>
-    </span>
-    <span class="tooltip-content">
-      <div class="share-wrap">
-        <div class="share-icons">
-          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
-            <i class="icon icon-weibo"></i>
-          </a>
-          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
-            <i class="icon icon-weixin"></i>
-          </a>
-          <a class="qq share-sns" href="javascript:;" data-type="qq">
-            <i class="icon icon-qq"></i>
-          </a>
-          <a class="douban share-sns" href="javascript:;" data-type="douban">
-            <i class="icon icon-douban"></i>
-          </a>
-          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
-            <i class="icon icon-qzone"></i>
-          </a>
-          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
-            <i class="icon icon-facebook"></i>
-          </a>
-          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
-            <i class="icon icon-twitter"></i>
-          </a>
-          <a class="google share-sns" href="javascript:;" data-type="google">
-            <i class="icon icon-google"></i>
-          </a>
         </div>
-      </div>
-    </span>
-  </div>
-</div>
-
-<div class="page-modal wx-share js-wx-box">
-    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
-    <p>扫一扫，分享到微信</p>
-    <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/2019/06/26/informer/" alt="微信分享二维码">
-    </div>
-</div>
-
-<div class="mask js-mask"></div>
-      
-      <div class="clearfix"></div>
-    </div>
+        <div class="clearfix"></div>
+    </header>
   </div>
 </article>
-
-  
-<nav id="article-nav">
-  
-    <a href="/2019/07/31/kubectl/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          kubernetes源码赏析———kubectl
-        
-      </div>
-    </a>
   
   
-    <a href="/2019/04/25/job/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">kubernetes之Job技术内幕</div>
-      <i class="icon-circle-right"></i>
-    </a>
-  
-</nav>
-
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-  
-  
+    </div></section>
   
 
-  
-
-  
-
-  
-  <div id="gitment-ctn"></div> 
-<link rel="stylesheet" href="//imsun.github.io/gitment/style/default.css">
-<script src="//imsun.github.io/gitment/dist/gitment.browser.js"></script>
-<script>
-var gitment = new Gitment({
-  //id: "http://yoursite.com/2019/06/26/informer/",
-  id: 'Wed Jun 26 2019 09:26:46 GMT+0800'
-  owner: 'luohua13',
-  repo: 'mycomments',
-  oauth: {
-    client_id: 'f9b24de571657bb4a896',
-    client_secret: 'f50988d72dc38ddb669097315b4d8c53fde001b6',
-  },
-})
-gitment.render('gitment-ctn')
-</script>
-
-  
-  
-  <div id="gitalk-container" style="padding: 0px 30px 0px 30px;"></div> 
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
-<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
-<script type="text/javascript">
-
-if(true){
-	var gitalk = new Gitalk({
-  	clientID: 'f9b24de571657bb4a896',
-  	clientSecret: 'f50988d72dc38ddb669097315b4d8c53fde001b6',
-  	repo: 'mycomments',
-  	owner: 'luohua13',
-  	admin: ['luohua13'],
-  	id: 'Wed Jun 26 2019 09:26:46 GMT+0800',
-  	distractionFreeMode: 'true'
-})
-gitalk.render('gitalk-container') 
-}
-</script>
-
-  
+    
 
 
 
@@ -431,8 +236,8 @@ gitalk.render('gitalk-container')
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: true,
-		isArchive: false,
+		isPost: false,
+		isArchive: true,
 		isTag: false,
 		isCategory: false,
 		open_in_new: true,
