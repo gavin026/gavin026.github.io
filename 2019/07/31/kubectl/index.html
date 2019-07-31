@@ -8,19 +8,19 @@
   <link rel="dns-prefetch" href="http://yoursite.com">
   <title>kubernetes源码赏析———kubectl | luohua</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="before you beginYou need to understand the following knowledge:  Cobra Observer Design Pattern  A Tour of kubectl to API Server">
+  <meta name="description" content="before you beginYou need to understand the following knowledge:  Cobra Observer Design Pattern">
 <meta name="keywords" content="kubectl,Observer Design Pattern">
 <meta property="og:type" content="article">
 <meta property="og:title" content="kubernetes源码赏析———kubectl">
 <meta property="og:url" content="http://yoursite.com/2019/07/31/kubectl/index.html">
 <meta property="og:site_name" content="luohua">
-<meta property="og:description" content="before you beginYou need to understand the following knowledge:  Cobra Observer Design Pattern  A Tour of kubectl to API Server">
+<meta property="og:description" content="before you beginYou need to understand the following knowledge:  Cobra Observer Design Pattern">
 <meta property="og:locale" content="default">
 <meta property="og:image" content="http://yoursite.com/image/kubectl.jpeg">
-<meta property="og:updated_time" content="2019-07-31T05:56:02.242Z">
+<meta property="og:updated_time" content="2019-07-31T05:59:57.928Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kubernetes源码赏析———kubectl">
-<meta name="twitter:description" content="before you beginYou need to understand the following knowledge:  Cobra Observer Design Pattern  A Tour of kubectl to API Server">
+<meta name="twitter:description" content="before you beginYou need to understand the following knowledge:  Cobra Observer Design Pattern">
 <meta name="twitter:image" content="http://yoursite.com/image/kubectl.jpeg">
   
     <link rel="alternative" href="/atom.xml" title="luohua" type="application/atom+xml">
@@ -168,9 +168,9 @@
         <h2 id="before-you-begin"><a href="#before-you-begin" class="headerlink" title="before you begin"></a>before you begin</h2><p>You need to understand the following knowledge:</p>
 <ul>
 <li>Cobra</li>
-<li><a href="https://design-patterns.readthedocs.io/zh_CN/latest/behavioral_patterns/observer.html" target="_blank" rel="noopener">Observer Design Pattern</a></li>
+<li><a href="https://design-patterns.readthedocs.io/zh_CN/latest/behavioral_patterns/observer.html" target="_blank" rel="noopener">Observer Design Pattern</a><a id="more"></a>
+<h2 id="A-Tour-of-kubectl-to-API-Server"><a href="#A-Tour-of-kubectl-to-API-Server" class="headerlink" title="A Tour of kubectl to API Server"></a>A Tour of kubectl to API Server</h2></li>
 </ul>
-<h2 id="A-Tour-of-kubectl-to-API-Server"><a href="#A-Tour-of-kubectl-to-API-Server" class="headerlink" title="A Tour of kubectl to API Server"></a>A Tour of kubectl to API Server</h2><a id="more"></a>
 <p>我们要追踪的命令是kubectl delete -f——它会从文件删除K8s资源,如下将关键源码以逻辑顺序贴出：</p>
 <h3 id="主要流程"><a href="#主要流程" class="headerlink" title="主要流程"></a>主要流程</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Run: <span class="function"><span class="keyword">func</span><span class="params">(cmd *cobra.Command, args []<span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">			o := deleteFlags.ToOptions(<span class="literal">nil</span>, streams)</span><br><span class="line">			cmdutil.CheckErr(o.Complete(f, args, cmd))</span><br><span class="line">			cmdutil.CheckErr(o.Validate())</span><br><span class="line">			cmdutil.CheckErr(o.RunDelete())</span><br><span class="line">        &#125;,</span><br></pre></td></tr></table></figure>
 <figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(o *DeleteOptions)</span> <span class="title">RunDelete</span><span class="params">()</span> <span class="title">error</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> o.DeleteResult(o.Result)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(o *DeleteOptions)</span> <span class="title">DeleteResult</span><span class="params">(r *resource.Result)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">    r.Visit(<span class="function"><span class="keyword">func</span><span class="params">(info *resource.Info, err error)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">        response, err := o.deleteResource(info, options)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(o *DeleteOptions)</span> <span class="title">deleteResource</span><span class="params">(info *resource.Info, deleteOptions *metav1.DeleteOptions)</span> <span class="params">(runtime.Object, error)</span></span> &#123;</span><br><span class="line">    deleteResponse, err := resource.NewHelper(info.Client, info.Mapping).DeleteWithOptions(info.Namespace, info.Name, deleteOptions)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
