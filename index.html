@@ -140,6 +140,202 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-apiserver" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/09/02/apiserver/">kubernetes apiserver详解</a>
+    </h1>
+  
+
+        
+        <a href="/2019/09/02/apiserver/" class="archive-article-date">
+  	<time datetime="2019-09-02T02:42:04.920Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-09-02</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>本章将从kubernetes源码层次，解析apiserver流程中的关键要点。<br>
+        
+          <a class="article-more-a" href="/2019/09/02/apiserver/#more">more >></a>
+        
+      
+      
+    </p></div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">apiserver</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">go-restful</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/kubernetes//" class="article-tag-list-link color1">kubernetes</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+
+  
+    <article id="post-client-go" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/07/31/client-go/">client-go</a>
+    </h1>
+  
+
+        
+        <a href="/2019/07/31/client-go/" class="archive-article-date">
+  	<time datetime="2019-07-31T09:55:19.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-07-31</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><code>`</code>golang<br>type ClientBuilderNewFunc func(cfg <em>rest.Config, cluster string) ClientBuilderInterface<br>type ClientBuilderInterface interface {<br>    KubeClient() (KubeClientInterface, error)<br>    NamespacedDynamicClient(resource, version, namespace string) (ri dynamic.ResourceInterface, err error)<br>    ClientFromResource(o </em>unstructured.Unstructured) (dynamic.ResourceInterface, error)<br>    ClientFromResourceKind(kind, namespace string) (dynamic.ResourceInterface, error)<br>}</p>
+<p>//queryCronJob query CronJob and return unstructured<br>func queryCronJob(c kubernetes.ClientBuilderInterface, name, namespace string) (cronjob *unstructured.Unstructured, err error) {<br>    dynamicClient, err := c.ClientFromResourceKind(“cronjob”, namespace)<br>    if err != nil {<br>        return<br>    }<br>    cronjob, err = dynamicClient.Get(name, v1.GetOptions{})<br>    return<br>}</p>
+<p>cronjob, err := queryCronJob(c, name, namespace)</p>
+<p>c, err := r.cfg.ClientBuilderFromRequest(req)<br>// ClientBuilderFromRequest creates a dynamic KubeClient from a Request.<br>func (ac <em>APIConfig) ClientBuilderFromRequest(req </em>restful.Request) (k8s.ClientBuilderInterface, error) {<br>    cfg, err := ac.RESTConfig(req)<br>    if err != nil {<br>        return nil, errors.NewInternalError(err)<br>    }</p>
+<pre><code>cluster := req.PathParameter(&quot;cluster&quot;)
+cfg.TLSClientConfig.Insecure = true
+// If the insecure flag is true, the root ca should be nil.
+cfg.CAFile = &quot;&quot;
+cfg.CAData = nil
+return ac.NewClientBuilder(cfg, cluster), nil
+</code></pre><p>}</p>
+<p>// APIConfig is the configuration of the APIServer.<br>type APIConfig struct {<br>    LabelBaseDomain  string<br>    Server           server.Server<br>    RESTConfig       RESTConfigFunc<br>    Logger           <em>zap.SugaredLogger<br>    NewClientBuilder k8s.ClientBuilderNewFunc<br>}<br>// InstallRoutes implements the APIRoutesInterface.<br>func (r </em>REST) InstallRoutes(version core.APIVersion, ws <em>restful.WebService) {<br>    ws.Route(<br>        ws.POST(“{cluster}/cronjobs/{namespace}/{name}/exec”).To(r.CreateJobFromCronJob).<br>            Doc(“Create Job from CronJob to run”).<br>            Param(restful.PathParameter(“namespace”, “namespace”).DataType(“string”)).<br>            Param(restful.PathParameter(“name”, “cronjob name”).DataType(“string”)).<br>            Param(restful.PathParameter(“cluster”, “cluster name”).DataType(“string”)).<br>            Returns(200, “OK”, batchv1.Job{}).<br>            Produces(restful.MIME_JSON),<br>    )<br>}<br>func (a </em>Server) V1Service(srv server.Server, config <em>config.APIConfig) </em>restful.WebService {<br>    cronjob.NewREST(config)<br>}<br>// REST handles the resource rest request.<br>type REST struct {<br>    rest.Handler<br>    cfg *config.APIConfig<br>}</p>
+<p>// NewREST returns an resource REST object.<br>func NewREST(cfg <em>config.APIConfig) </em>REST {<br>    return &amp;REST{<br>        cfg: cfg,<br>    }<br>}<br>/Users/luohua/go/src/alauda.io/archon/vendor/k8s.io/client-go/rest/request.go<br>// Server defines the API Server to run the archon-api.<br>type Server struct {<br>    Config config.APIConfig<br>}</p>
+<p>// NewServer returns an Server.<br>func NewServer() *Server {<br>    return &amp;Server{<br>        Config: config.APIConfig{<br>            NewClientBuilder: k8s.DefaultClientBuilder,<br>        },<br>    }<br>}</p>
+<p>// ApplyToServer applies web services to server.<br>func (a *Server) ApplyToServer(srv server.Server) error {<br>    logger := srv.L().Named(“archon-api”)<br>    a.Config.Server = srv<br>    a.Config.Logger = logger.Sugar()<br>    a.Config.RESTConfig = a.Config.RESTConfigFromServerManager</p>
+<pre><code>cors := restful.CrossOriginResourceSharing{
+    AllowedDomains: []string{&quot;.*&quot;},
+    AllowedMethods: []string{&quot;GET&quot;, &quot;PUT&quot;, &quot;POST&quot;, &quot;DELETE&quot;, &quot;PATCH&quot;, &quot;OPTIONS&quot;},
+    AllowedHeaders: []string{&quot;DNT&quot;, &quot;X-CustomHeader&quot;, &quot;Keep-Alive&quot;, &quot;User-Agent&quot;, &quot;X-Requested-With&quot;, &quot;If-Modified-Since&quot;, &quot;Cache-Control&quot;, &quot;Content-Type&quot;, &quot;Authorization&quot;},
+    CookiesAllowed: true,
+    Container:      srv.Container(),
+}
+srv.Container().
+    Add(a.HealthService(srv, &amp;a.Config)).
+    Add(a.V1Service(srv, &amp;a.Config)).
+    Add(a.V1Resources(srv, &amp;a.Config)).
+    Filter(cors.Filter)
+return nil
+</code></pre><p>}</p>
+<p>type dynamicClient struct {<br>    client <em>rest.RESTClient<br>}<br>func NewForConfig(inConfig </em>rest.Config) (Interface, error) {<br>    config := rest.CopyConfig(inConfig)<br>    // for serializing the options<br>    config.GroupVersion = &amp;schema.GroupVersion{}<br>    config.APIPath = “/if-you-see-this-search-for-the-break”<br>    config.AcceptContentTypes = “application/json”<br>    config.ContentType = “application/json”<br>    config.NegotiatedSerializer = basicNegotiatedSerializer{} // this gets used for discovery and error handling types<br>    if config.UserAgent == “” {<br>        config.UserAgent = rest.DefaultKubernetesUserAgent()<br>    }</p>
+<pre><code>restClient, err := rest.RESTClientFor(config)
+if err != nil {
+    return nil, err
+}
+
+return &amp;dynamicClient{client: restClient}, nil
+</code></pre><p>}</p>
+<p>// CoreV1Client is used to interact with features provided by the  group.<br>type CoreV1Client struct {<br>    restClient rest.Interface<br>}</p>
+<p>// NewForConfig creates a new CoreV1Client for the given config.<br>func NewForConfig(c <em>rest.Config) (</em>CoreV1Client, error) {<br>    config := *c<br>    if err := setConfigDefaults(&amp;config); err != nil {<br>        return nil, err<br>    }<br>    client, err := rest.RESTClientFor(&amp;config)<br>    if err != nil {<br>        return nil, err<br>    }<br>    return &amp;CoreV1Client{client}, nil<br>}</p>
+<p>func (c <em>dynamicResourceClient) Get(name string, opts metav1.GetOptions, subresources …string) (</em>unstructured.Unstructured, error) {<br>    result := c.client.client.Get().AbsPath(append(c.makeURLSegments(name), subresources…)…).SpecificallyVersionedParams(&amp;opts, dynamicParameterCodec, versionV1).Do()<br>    if err := result.Error(); err != nil {<br>        return nil, err<br>    }<br>    retBytes, err := result.Raw()<br>    if err != nil {<br>        return nil, err<br>    }<br>    uncastObj, err := runtime.Decode(unstructured.UnstructuredJSONScheme, retBytes)<br>    if err != nil {<br>        return nil, err<br>    }<br>    return uncastObj.(*unstructured.Unstructured), nil<br>}</p>
+<p>// Get takes name of the pod, and returns the corresponding pod object, and an error if there is any.<br>func (c <em>pods) Get(name string, options metav1.GetOptions) (result </em>v1.Pod, err error) {<br>    result = &amp;v1.Pod{}<br>    err = c.client.Get().<br>        Namespace(c.ns).<br>        Resource(“pods”).<br>        Name(name).<br>        VersionedParams(&amp;options, scheme.ParameterCodec).<br>        Do().<br>        Into(result)<br>    return<br>}</p>
+<p>func setConfigDefaults(config *rest.Config) error {<br>    gv := v1beta1.SchemeGroupVersion<br>    config.GroupVersion = &amp;gv<br>    config.APIPath = “/apis”<br>    config.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: scheme.Codecs}</p>
+<pre><code>if config.UserAgent == &quot;&quot; {
+    config.UserAgent = rest.DefaultKubernetesUserAgent()
+}
+
+return nil
+</code></pre><p>}</p>
+<p>// syncGroupVersion happens in client init and new resource added<br>// if force == false, skip sync if already have data in the map<br>func (c *KubeClient) syncGroupVersion(force bool) error {<br>    if !force {<br>        _, ok := allAPIResourceMap.M[c.cluster]<br>        if ok {<br>            return nil<br>        }<br>    }<br>    klog.V(3).Infof(“force resync group version info for cluster: %s”, c.cluster)<br>    groups, err := c.kc.Discovery().ServerGroups()<br>    if err != nil {<br>        return err<br>    }<br>    klog.V(5).Infof(“resync group version info %+v for cluster: %s”, groups, c.cluster)<br>    allAPIGroupMap.Lock()<br>    allAPIGroupMap.M[c.cluster] = groups<br>    allAPIGroupMap.Unlock()</p>
+<pre><code>return nil
+</code></pre><p>}</p>
+
+      
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+
+  
     <article id="post-kubectl" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -496,6 +692,14 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">apiserver</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">go-restful</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">kube-controller-manager</a>
               </li>
              
@@ -508,15 +712,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">Factory Method Pattern</a>
+                <a href="javascript:void(0)" class="js-tag color4">Observer Design Pattern</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">job</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">Observer Design Pattern</a>
               </li>
             
             <div class="clearfix"></div>
@@ -567,7 +767,7 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
     
     	<section class="tools-section tools-section-me" q-show="aboutme">
   	  	
-  	  		<div class="aboutme-wrap" id="js-aboutme">Gavin,&lt;br&gt;&lt;br&gt;golang/python/k8s/docker/dacker&lt;br&gt;</div>
+  	  		<div class="aboutme-wrap" id="js-aboutme">Gavin Wang,1992-06-29,golang后端开发</div>
   	  	
     	</section>
     

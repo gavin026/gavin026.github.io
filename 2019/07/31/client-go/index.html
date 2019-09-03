@@ -6,15 +6,19 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>Tag: job | luohua</title>
+  <title>client-go | luohua</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="luohua">
-<meta property="og:url" content="http://yoursite.com/tags/job/index.html">
+  <meta name="description" content="`golangtype ClientBuilderNewFunc func(cfg rest.Config, cluster string) ClientBuilderInterfacetype ClientBuilderInterface interface {    KubeClient() (KubeClientInterface, error)    NamespacedDynamicCl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="client-go">
+<meta property="og:url" content="http://yoursite.com/2019/07/31/client-go/index.html">
 <meta property="og:site_name" content="luohua">
+<meta property="og:description" content="`golangtype ClientBuilderNewFunc func(cfg rest.Config, cluster string) ClientBuilderInterfacetype ClientBuilderInterface interface {    KubeClient() (KubeClientInterface, error)    NamespacedDynamicCl">
 <meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-08-02T08:17:33.590Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="luohua">
+<meta name="twitter:title" content="client-go">
+<meta name="twitter:description" content="`golangtype ClientBuilderNewFunc func(cfg rest.Config, cluster string) ClientBuilderInterfacetype ClientBuilderInterface interface {    KubeClient() (KubeClientInterface, error)    NamespacedDynamicCl">
   
     <link rel="alternative" href="/atom.xml" title="luohua" type="application/atom+xml">
   
@@ -138,75 +142,264 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-client-go" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2019" class="archive-year">2019</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/04/25/job/" class="archive-article-date">
-  	<time datetime="2019-04-25T02:51:42.149Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-04-25</time>
-</a>
-        </div>
-    	 
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/04/25/job/">kubernetes之Job技术内幕</a>
+    <h1 class="article-title" itemprop="name">
+      client-go
     </h1>
   
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">kube-controller-manager</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">job</a>
-        		</li>
-      		
-		</ul>
-	</div>
+        
+        <a href="/2019/07/31/client-go/" class="archive-article-date">
+  	<time datetime="2019-07-31T09:55:19.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-07-31</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><code>`</code>golang<br>type ClientBuilderNewFunc func(cfg <em>rest.Config, cluster string) ClientBuilderInterface<br>type ClientBuilderInterface interface {<br>    KubeClient() (KubeClientInterface, error)<br>    NamespacedDynamicClient(resource, version, namespace string) (ri dynamic.ResourceInterface, err error)<br>    ClientFromResource(o </em>unstructured.Unstructured) (dynamic.ResourceInterface, error)<br>    ClientFromResourceKind(kind, namespace string) (dynamic.ResourceInterface, error)<br>}</p>
+<p>//queryCronJob query CronJob and return unstructured<br>func queryCronJob(c kubernetes.ClientBuilderInterface, name, namespace string) (cronjob *unstructured.Unstructured, err error) {<br>    dynamicClient, err := c.ClientFromResourceKind(“cronjob”, namespace)<br>    if err != nil {<br>        return<br>    }<br>    cronjob, err = dynamicClient.Get(name, v1.GetOptions{})<br>    return<br>}</p>
+<p>cronjob, err := queryCronJob(c, name, namespace)</p>
+<p>c, err := r.cfg.ClientBuilderFromRequest(req)<br>// ClientBuilderFromRequest creates a dynamic KubeClient from a Request.<br>func (ac <em>APIConfig) ClientBuilderFromRequest(req </em>restful.Request) (k8s.ClientBuilderInterface, error) {<br>    cfg, err := ac.RESTConfig(req)<br>    if err != nil {<br>        return nil, errors.NewInternalError(err)<br>    }</p>
+<pre><code>cluster := req.PathParameter(&quot;cluster&quot;)
+cfg.TLSClientConfig.Insecure = true
+// If the insecure flag is true, the root ca should be nil.
+cfg.CAFile = &quot;&quot;
+cfg.CAData = nil
+return ac.NewClientBuilder(cfg, cluster), nil
+</code></pre><p>}</p>
+<p>// APIConfig is the configuration of the APIServer.<br>type APIConfig struct {<br>    LabelBaseDomain  string<br>    Server           server.Server<br>    RESTConfig       RESTConfigFunc<br>    Logger           <em>zap.SugaredLogger<br>    NewClientBuilder k8s.ClientBuilderNewFunc<br>}<br>// InstallRoutes implements the APIRoutesInterface.<br>func (r </em>REST) InstallRoutes(version core.APIVersion, ws <em>restful.WebService) {<br>    ws.Route(<br>        ws.POST(“{cluster}/cronjobs/{namespace}/{name}/exec”).To(r.CreateJobFromCronJob).<br>            Doc(“Create Job from CronJob to run”).<br>            Param(restful.PathParameter(“namespace”, “namespace”).DataType(“string”)).<br>            Param(restful.PathParameter(“name”, “cronjob name”).DataType(“string”)).<br>            Param(restful.PathParameter(“cluster”, “cluster name”).DataType(“string”)).<br>            Returns(200, “OK”, batchv1.Job{}).<br>            Produces(restful.MIME_JSON),<br>    )<br>}<br>func (a </em>Server) V1Service(srv server.Server, config <em>config.APIConfig) </em>restful.WebService {<br>    cronjob.NewREST(config)<br>}<br>// REST handles the resource rest request.<br>type REST struct {<br>    rest.Handler<br>    cfg *config.APIConfig<br>}</p>
+<p>// NewREST returns an resource REST object.<br>func NewREST(cfg <em>config.APIConfig) </em>REST {<br>    return &amp;REST{<br>        cfg: cfg,<br>    }<br>}<br>/Users/luohua/go/src/alauda.io/archon/vendor/k8s.io/client-go/rest/request.go<br>// Server defines the API Server to run the archon-api.<br>type Server struct {<br>    Config config.APIConfig<br>}</p>
+<p>// NewServer returns an Server.<br>func NewServer() *Server {<br>    return &amp;Server{<br>        Config: config.APIConfig{<br>            NewClientBuilder: k8s.DefaultClientBuilder,<br>        },<br>    }<br>}</p>
+<p>// ApplyToServer applies web services to server.<br>func (a *Server) ApplyToServer(srv server.Server) error {<br>    logger := srv.L().Named(“archon-api”)<br>    a.Config.Server = srv<br>    a.Config.Logger = logger.Sugar()<br>    a.Config.RESTConfig = a.Config.RESTConfigFromServerManager</p>
+<pre><code>cors := restful.CrossOriginResourceSharing{
+    AllowedDomains: []string{&quot;.*&quot;},
+    AllowedMethods: []string{&quot;GET&quot;, &quot;PUT&quot;, &quot;POST&quot;, &quot;DELETE&quot;, &quot;PATCH&quot;, &quot;OPTIONS&quot;},
+    AllowedHeaders: []string{&quot;DNT&quot;, &quot;X-CustomHeader&quot;, &quot;Keep-Alive&quot;, &quot;User-Agent&quot;, &quot;X-Requested-With&quot;, &quot;If-Modified-Since&quot;, &quot;Cache-Control&quot;, &quot;Content-Type&quot;, &quot;Authorization&quot;},
+    CookiesAllowed: true,
+    Container:      srv.Container(),
+}
+srv.Container().
+    Add(a.HealthService(srv, &amp;a.Config)).
+    Add(a.V1Service(srv, &amp;a.Config)).
+    Add(a.V1Resources(srv, &amp;a.Config)).
+    Filter(cors.Filter)
+return nil
+</code></pre><p>}</p>
+<p>type dynamicClient struct {<br>    client <em>rest.RESTClient<br>}<br>func NewForConfig(inConfig </em>rest.Config) (Interface, error) {<br>    config := rest.CopyConfig(inConfig)<br>    // for serializing the options<br>    config.GroupVersion = &amp;schema.GroupVersion{}<br>    config.APIPath = “/if-you-see-this-search-for-the-break”<br>    config.AcceptContentTypes = “application/json”<br>    config.ContentType = “application/json”<br>    config.NegotiatedSerializer = basicNegotiatedSerializer{} // this gets used for discovery and error handling types<br>    if config.UserAgent == “” {<br>        config.UserAgent = rest.DefaultKubernetesUserAgent()<br>    }</p>
+<pre><code>restClient, err := rest.RESTClientFor(config)
+if err != nil {
+    return nil, err
+}
 
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/kubernetes//" class="article-tag-list-link color1">kubernetes</a>
-        		</li>
-      		
-		</ul>
-	</div>
+return &amp;dynamicClient{client: restClient}, nil
+</code></pre><p>}</p>
+<p>// CoreV1Client is used to interact with features provided by the  group.<br>type CoreV1Client struct {<br>    restClient rest.Interface<br>}</p>
+<p>// NewForConfig creates a new CoreV1Client for the given config.<br>func NewForConfig(c <em>rest.Config) (</em>CoreV1Client, error) {<br>    config := *c<br>    if err := setConfigDefaults(&amp;config); err != nil {<br>        return nil, err<br>    }<br>    client, err := rest.RESTClientFor(&amp;config)<br>    if err != nil {<br>        return nil, err<br>    }<br>    return &amp;CoreV1Client{client}, nil<br>}</p>
+<p>func (c <em>dynamicResourceClient) Get(name string, opts metav1.GetOptions, subresources …string) (</em>unstructured.Unstructured, error) {<br>    result := c.client.client.Get().AbsPath(append(c.makeURLSegments(name), subresources…)…).SpecificallyVersionedParams(&amp;opts, dynamicParameterCodec, versionV1).Do()<br>    if err := result.Error(); err != nil {<br>        return nil, err<br>    }<br>    retBytes, err := result.Raw()<br>    if err != nil {<br>        return nil, err<br>    }<br>    uncastObj, err := runtime.Decode(unstructured.UnstructuredJSONScheme, retBytes)<br>    if err != nil {<br>        return nil, err<br>    }<br>    return uncastObj.(*unstructured.Unstructured), nil<br>}</p>
+<p>// Get takes name of the pod, and returns the corresponding pod object, and an error if there is any.<br>func (c <em>pods) Get(name string, options metav1.GetOptions) (result </em>v1.Pod, err error) {<br>    result = &amp;v1.Pod{}<br>    err = c.client.Get().<br>        Namespace(c.ns).<br>        Resource(“pods”).<br>        Name(name).<br>        VersionedParams(&amp;options, scheme.ParameterCodec).<br>        Do().<br>        Into(result)<br>    return<br>}</p>
+<p>func setConfigDefaults(config *rest.Config) error {<br>    gv := v1beta1.SchemeGroupVersion<br>    config.GroupVersion = &amp;gv<br>    config.APIPath = “/apis”<br>    config.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: scheme.Codecs}</p>
+<pre><code>if config.UserAgent == &quot;&quot; {
+    config.UserAgent = rest.DefaultKubernetesUserAgent()
+}
 
+return nil
+</code></pre><p>}</p>
+<p>// syncGroupVersion happens in client init and new resource added<br>// if force == false, skip sync if already have data in the map<br>func (c *KubeClient) syncGroupVersion(force bool) error {<br>    if !force {<br>        _, ok := allAPIResourceMap.M[c.cluster]<br>        if ok {<br>            return nil<br>        }<br>    }<br>    klog.V(3).Infof(“force resync group version info for cluster: %s”, c.cluster)<br>    groups, err := c.kc.Discovery().ServerGroups()<br>    if err != nil {<br>        return err<br>    }<br>    klog.V(5).Infof(“resync group version info %+v for cluster: %s”, groups, c.cluster)<br>    allAPIGroupMap.Lock()<br>    allAPIGroupMap.M[c.cluster] = groups<br>    allAPIGroupMap.Unlock()</p>
+<pre><code>return nil
+</code></pre><p>}</p>
 
+      
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>小小意思，意思意思～<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/alipay.jpeg">
+                      <span class="reward-type">支付宝</span>
+                    </div>
+                    
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/wechat.jpeg">
+                      <span class="reward-type">微信</span>
+                    </div>
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
+        </div>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/2019/07/31/client-go/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
+  
+<nav id="article-nav">
+  
+    <a href="/2019/09/02/apiserver/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          kubernetes apiserver详解
+        
+      </div>
+    </a>
   
   
-    </div></section>
+    <a href="/2019/07/31/kubectl/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">kubernetes源码赏析——kubectl</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+  
+  
   
 
-    
+  
+
+  
+
+  
+  <div id="gitment-ctn"></div> 
+<link rel="stylesheet" href="//imsun.github.io/gitment/style/default.css">
+<script src="//imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+var gitment = new Gitment({
+  //id: "http://yoursite.com/2019/07/31/client-go/",
+  id: 'Wed Jul 31 2019 17:55:19 GMT+0800'
+  owner: 'luohua13',
+  repo: 'mycomments',
+  oauth: {
+    client_id: 'f9b24de571657bb4a896',
+    client_secret: 'f50988d72dc38ddb669097315b4d8c53fde001b6',
+  },
+})
+gitment.render('gitment-ctn')
+</script>
+
+  
+  
+  <div id="gitalk-container" style="padding: 0px 30px 0px 30px;"></div> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+
+if(true){
+	var gitalk = new Gitalk({
+  	clientID: 'f9b24de571657bb4a896',
+  	clientSecret: 'f50988d72dc38ddb669097315b4d8c53fde001b6',
+  	repo: 'mycomments',
+  	owner: 'luohua13',
+  	admin: ['luohua13'],
+  	id: 'Wed Jul 31 2019 17:55:19 GMT+0800',
+  	distractionFreeMode: 'true'
+})
+gitalk.render('gitalk-container') 
+}
+</script>
+
+  
 
 
 
@@ -236,9 +429,9 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
+		isPost: true,
 		isArchive: false,
-		isTag: true,
+		isTag: false,
 		isCategory: false,
 		open_in_new: true,
 		toc_hide_index: true,

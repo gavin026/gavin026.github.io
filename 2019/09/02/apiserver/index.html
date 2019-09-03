@@ -6,15 +6,20 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>Tag: job | luohua</title>
+  <title>kubernetes apiserver详解 | luohua</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="luohua">
-<meta property="og:url" content="http://yoursite.com/tags/job/index.html">
+  <meta name="description" content="本章将从kubernetes源码层次，解析apiserver流程中的关键要点。">
+<meta name="keywords" content="apiserver,go-restful">
+<meta property="og:type" content="article">
+<meta property="og:title" content="kubernetes apiserver详解">
+<meta property="og:url" content="http://yoursite.com/2019/09/02/apiserver/index.html">
 <meta property="og:site_name" content="luohua">
+<meta property="og:description" content="本章将从kubernetes源码层次，解析apiserver流程中的关键要点。">
 <meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-09-03T07:00:25.120Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="luohua">
+<meta name="twitter:title" content="kubernetes apiserver详解">
+<meta name="twitter:description" content="本章将从kubernetes源码层次，解析apiserver流程中的关键要点。">
   
     <link rel="alternative" href="/atom.xml" title="luohua" type="application/atom+xml">
   
@@ -138,52 +143,112 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-apiserver" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2019" class="archive-year">2019</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/04/25/job/" class="archive-article-date">
-  	<time datetime="2019-04-25T02:51:42.149Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-04-25</time>
-</a>
-        </div>
-    	 
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/04/25/job/">kubernetes之Job技术内幕</a>
+    <h1 class="article-title" itemprop="name">
+      kubernetes apiserver详解
     </h1>
   
 
-        <div class="article-info info-on-right">
-          
+        
+        <a href="/2019/09/02/apiserver/" class="archive-article-date">
+  	<time datetime="2019-09-02T02:42:04.920Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-09-02</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>本章将从kubernetes源码层次，解析apiserver流程中的关键要点。<br><a id="more"></a></p>
+<h3 id="启动流程"><a href="#启动流程" class="headerlink" title="启动流程"></a>启动流程</h3><p>同kubernetes所有的组件启动代码一样，apiserver使用cobra命令行方式启动</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">RunE: <span class="function"><span class="keyword">func</span><span class="params">(cmd *cobra.Command, args []<span class="keyword">string</span>)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">			<span class="comment">// set default options</span></span><br><span class="line">			completedOptions, err := Complete(s)</span><br><span class="line">			<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">				<span class="keyword">return</span> err</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="comment">// validate options</span></span><br><span class="line">			<span class="keyword">if</span> errs := completedOptions.Validate(); <span class="built_in">len</span>(errs) != <span class="number">0</span> &#123;</span><br><span class="line">				<span class="keyword">return</span> utilerrors.NewAggregate(errs)</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">return</span> Run(completedOptions, stopCh)</span><br><span class="line">		&#125;,</span><br></pre></td></tr></table></figure>
+<p>接下来的代码主线：<br>CreateServerChain  –&gt;  CreateKubeAPIServer –&gt; kubeAPIServerConfig.Complete().New()<br>–&gt; m.InstallLegacyAPI  –&gt;  NewLegacyRESTStorage()  –&gt; InstallLegacyAPIGroup  –&gt;<br>    m.InstallAPIs<br>–&gt; installAPIResources  –&gt; InstallREST –&gt;  installer.Install()  –&gt;  registerResourceHandlers</p>
+<p>以上代码主线可以对照源码进行阅读，本文将对其中比较关键的几步进行解析。</p>
+<h3 id="NewLegacyRESTStorage"><a href="#NewLegacyRESTStorage" class="headerlink" title="NewLegacyRESTStorage"></a>NewLegacyRESTStorage</h3><p>通过NewLegacyRESTStorage方法创建各个资源的RESTStorage。RESTStorage是一个结构体，具体的定义在vendor/k8s.io/apiserver/pkg/registry/generic/registry/store.go下，结构体内主要包含NewFunc返回特定资源信息、NewListFunc返回特定资源列表、CreateStrategy特定资源创建时的策略、UpdateStrategy更新时的策略以及DeleteStrategy删除时的策略等重要方法。</p>
+<p>以configmap为例：<br><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">configMapStorage := configmapstore.NewREST(restOptionsGetter)</span><br></pre></td></tr></table></figure></p>
+<p>||<br><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// NewREST returns a RESTStorage object that will work with ConfigMap objects.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewREST</span><span class="params">(optsGetter generic.RESTOptionsGetter)</span> *<span class="title">REST</span></span> &#123;</span><br><span class="line">	...</span><br><span class="line">	<span class="keyword">return</span> &amp;REST&#123;store&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>常见的像 pod、event、secret、namespace、endpoints等，统一调用NewREST方法构造相应的资源。待所有资源的store创建完成之后，使用restStorageMap的Map类型将每个资源的路由和对应的store对应起来，方便后续去做路由的统一规划</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">restStorageMap := <span class="keyword">map</span>[<span class="keyword">string</span>]rest.Storage&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="string">"configMaps"</span>:                    configMapStorage,</span><br><span class="line">&#125;</span><br><span class="line">apiGroupInfo.VersionedResourcesStorageMap[<span class="string">"v1"</span>] = restStorageMap</span><br><span class="line"><span class="keyword">return</span> restStorage, apiGroupInfo, <span class="literal">nil</span></span><br></pre></td></tr></table></figure>
+<p>然后再到 installer.Install()–&gt;registerResourceHandlers</p>
+<h3 id="registerResourceHandlers"><a href="#registerResourceHandlers" class="headerlink" title="registerResourceHandlers"></a>registerResourceHandlers</h3><p>从restStorageMap取出每个storage，然后执行 registerResourceHandlers</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(a *APIInstaller)</span> <span class="title">registerResourceHandlers</span><span class="params">(path <span class="keyword">string</span>, storage rest.Storage, ws *restful.WebService)</span></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    creater, isCreater := storage.(rest.Creater) <span class="comment">//以create为例</span></span><br><span class="line">    ...</span><br><span class="line">    actions = appendIf(actions, action&#123;<span class="string">"POST"</span>, resourcePath, resourceParams, namer, <span class="literal">false</span>&#125;, isCreater)</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">switch</span> action.Verb &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">"POST"</span>: <span class="comment">// Create a resource.</span></span><br><span class="line">            handler = restfulCreateResource(creater, reqScope, admit) <span class="comment">//这里只列举一种情况</span></span><br><span class="line">            route := ws.POST(action.Path).To(handler)  <span class="comment">//匹配go-restful设计模式</span></span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接下来重点分析handler</p>
+<h3 id="handler"><a href="#handler" class="headerlink" title="handler"></a>handler</h3><p>handler是apiserver的核心，是所有对apisever的请求的执行体。<br>handler参数的调用最终都会走到createHandler方法处，位于kubernetes/vendor/k8s.io/apiserver/pkg/endpoints/handlers/crete.go下。最核心的步骤即调用了Create方法<br><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">result, err := finishRequest(timeout, <span class="function"><span class="keyword">func</span><span class="params">()</span> <span class="params">(runtime.Object, error)</span></span> &#123;</span><br><span class="line">			<span class="keyword">return</span> r.Create(   <span class="comment">//r=creater</span></span><br><span class="line">				ctx,</span><br><span class="line">				name,</span><br><span class="line">				obj,</span><br><span class="line">				rest.AdmissionToValidateObjectFunc(admit, admissionAttributes),</span><br><span class="line">				options,</span><br><span class="line">			)</span><br><span class="line">		&#125;)</span><br></pre></td></tr></table></figure></p>
+<p>回到creater.Create() –&gt; func (e *Store) Create()<br>最终调用的是位于kubernetes/staging/src/k8s.io/apiserver/pkg/registry/generic/registry/store.go下的Create方法。<br>POST对应的是e.Storage.Create(）–&gt; Storage.Create(<br>||<br>即store.Storage.Storage.Create(）</p>
+<p>然后回到NewREST方法中:<br><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">options := &amp;generic.StoreOptions&#123;RESTOptions: optsGetter&#125;</span><br><span class="line">store.CompleteWithOptions(options)</span><br></pre></td></tr></table></figure></p>
+<p>CompleteWithOptions<br><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">opts, err := options.RESTOptions.GetRESTOptions(e.DefaultQualifiedResource)</span><br><span class="line">e.Storage.Storage, e.DestroyFunc = opts.Decorator(</span><br><span class="line">			opts.StorageConfig,</span><br><span class="line">			e.NewFunc(),</span><br><span class="line">			prefix,</span><br><span class="line">			keyFunc,</span><br><span class="line">			e.NewListFunc,</span><br><span class="line">			attrFunc,</span><br><span class="line">			triggerFunc,</span><br><span class="line">		)</span><br></pre></td></tr></table></figure></p>
+<p>||</p>
+<p>stare.Storage.Storage = optsGetter.RESTOptions.GetRESTOptions().Decorator</p>
+<p>回到optsGetter的构建：</p>
+<p>optsGetter –&gt; restOptionsGetter –&gt; c.GenericConfig.RESTOptionsGetter</p>
+<p>一步步走下去，最终调用位于createAPIExtensionsConfig函数体中：<br><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">genericConfig.RESTOptionsGetter = &amp;genericoptions.SimpleRestOptionsFactory&#123;Options: etcdOptions&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然后回到GetRESTOptions 方法：<br>func (f *SimpleRestOptionsFactory) GetRESTOptions()<br><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">ret.Decorator = genericregistry.StorageWithCacher(cacheSize)</span><br><span class="line"><span class="keyword">return</span> ret</span><br></pre></td></tr></table></figure></p>
+<p>如此便十分明确代码逻辑：：<br>stare.Storage.Storage = genericregistry.StorageWithCacher(cacheSize)</p>
+<p>接下来create方法正式登场：</p>
+<h3 id="数据库操作"><a href="#数据库操作" class="headerlink" title="数据库操作"></a>数据库操作</h3><p>ApiServer与数据库的交互主要指的是与etcd的交互。Kubernetes所有的组件不直接与etcd交互，都是通过请求apiserver，apiserver与etcd进行交互完成数据的最终落盘。<br>接着上面的代码进行分析：</p>
+<p>StorageWithCacher –&gt; NewRawStorage –&gt; factory.Create(*config)</p>
+<p>factory.Create(*config)代码如下，返回stare.Storage.Storage<br><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create creates a storage backend based on given config.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Create</span><span class="params">(c storagebackend.Config)</span> <span class="params">(storage.Interface, DestroyFunc, error)</span></span> &#123;</span><br><span class="line">	<span class="keyword">switch</span> c.Type &#123;</span><br><span class="line">	<span class="keyword">case</span> <span class="string">"etcd2"</span>:</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, <span class="literal">nil</span>, fmt.Errorf(<span class="string">"%v is no longer a supported storage backend"</span>, c.Type)</span><br><span class="line">	<span class="keyword">case</span> storagebackend.StorageTypeUnset, storagebackend.StorageTypeETCD3:</span><br><span class="line">		<span class="keyword">return</span> newETCD3Storage(c)</span><br><span class="line">	<span class="keyword">default</span>:</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, <span class="literal">nil</span>, fmt.Errorf(<span class="string">"unknown storage type: %s"</span>, c.Type)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>通过Create方法判断是创建etcd2或是etcd3的后端etcd版本，目前版本默认的是etcd3。</p>
+<p>由newETCD3Storage –&gt; etcd3.New(） –&gt; newStore()<br>得知最终store的create方法：<br><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create implements storage.Interface.Create.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *store)</span> <span class="title">Create</span><span class="params">(ctx context.Context, key <span class="keyword">string</span>, obj, out runtime.Object, ttl <span class="keyword">uint64</span>)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> version, err := s.versioner.ObjectResourceVersion(obj); err == <span class="literal">nil</span> &amp;&amp; version != <span class="number">0</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> errors.New(<span class="string">"resourceVersion should not be set on objects to be created"</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> err := s.versioner.PrepareObjectForStorage(obj); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> fmt.Errorf(<span class="string">"PrepareObjectForStorage failed: %v"</span>, err)</span><br><span class="line">	&#125;</span><br><span class="line">	data, err := runtime.Encode(s.codec, obj)        <span class="comment">//调用Encode方法序列化；</span></span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> err</span><br><span class="line">	&#125;</span><br><span class="line">	key = path.Join(s.pathPrefix, key)              <span class="comment">//调用Encode方法序列化；</span></span><br><span class="line"></span><br><span class="line">	opts, err := s.ttlOpts(ctx, <span class="keyword">int64</span>(ttl))</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	newData, err := s.transformer.TransformToStorage(data, authenticatedDataString(key))  <span class="comment">//调用TransformToStorage将数据类型进行转换；</span></span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> storage.NewInternalError(err.Error())</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	txnResp, err := s.client.KV.Txn(ctx).If(                <span class="comment">//调用客户端方法进行etcd的写入操作</span></span><br><span class="line">		notFound(key),</span><br><span class="line">	).Then(</span><br><span class="line">		clientv3.OpPut(key, <span class="keyword">string</span>(newData), opts...),</span><br><span class="line">	).Commit()</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> err</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> !txnResp.Succeeded &#123;</span><br><span class="line">		<span class="keyword">return</span> storage.NewKeyExistsError(key, <span class="number">0</span>)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> out != <span class="literal">nil</span> &#123;</span><br><span class="line">		putResp := txnResp.Responses[<span class="number">0</span>].GetResponsePut()</span><br><span class="line">		<span class="keyword">return</span> decode(s.codec, s.versioner, data, out, putResp.Header.Revision)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>至此，完成从路由注册到handler处理以及对应的etcd数据库操作的绑定，完成整个路由后端的操作步骤。</p>
+
+      
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>小小意思，意思意思～<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/alipay.jpeg">
+                      <span class="reward-type">支付宝</span>
+                    </div>
+                    
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/wechat.jpeg">
+                      <span class="reward-type">微信</span>
+                    </div>
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">kube-controller-manager</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">apiserver</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">job</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">go-restful</a>
         		</li>
       		
 		</ul>
 	</div>
 
-          
+      
 	<div class="article-category tagcloud">
 		<i class="icon-book icon"></i>
 		<ul class="article-tag-list">
@@ -196,17 +261,157 @@
 	</div>
 
 
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/2019/09/02/apiserver/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
+  
+<nav id="article-nav">
   
   
-    </div></section>
+    <a href="/2019/07/31/client-go/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">client-go</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+        <div class="toc-container tooltip-left">
+            <i class="icon-font icon-category"></i>
+            <div class="tooltip tooltip-east">
+                <span class="tooltip-item">
+                </span>
+                <span class="tooltip-content">
+                    <div class="toc-article">
+                    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#启动流程"><span class="toc-number">1.</span> <span class="toc-text">启动流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#NewLegacyRESTStorage"><span class="toc-number">2.</span> <span class="toc-text">NewLegacyRESTStorage</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#registerResourceHandlers"><span class="toc-number">3.</span> <span class="toc-text">registerResourceHandlers</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#handler"><span class="toc-number">4.</span> <span class="toc-text">handler</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#数据库操作"><span class="toc-number">5.</span> <span class="toc-text">数据库操作</span></a></li></ol>
+                    </div>
+                </span>
+            </div>
+        </div>
+        
+    </div>
+</aside>
+
+
+
+  
+  
   
 
-    
+  
+
+  
+
+  
+  <div id="gitment-ctn"></div> 
+<link rel="stylesheet" href="//imsun.github.io/gitment/style/default.css">
+<script src="//imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+var gitment = new Gitment({
+  //id: "http://yoursite.com/2019/09/02/apiserver/",
+  id: 'Mon Sep 02 2019 10:42:04 GMT+0800'
+  owner: 'luohua13',
+  repo: 'mycomments',
+  oauth: {
+    client_id: 'f9b24de571657bb4a896',
+    client_secret: 'f50988d72dc38ddb669097315b4d8c53fde001b6',
+  },
+})
+gitment.render('gitment-ctn')
+</script>
+
+  
+  
+  <div id="gitalk-container" style="padding: 0px 30px 0px 30px;"></div> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+
+if(true){
+	var gitalk = new Gitalk({
+  	clientID: 'f9b24de571657bb4a896',
+  	clientSecret: 'f50988d72dc38ddb669097315b4d8c53fde001b6',
+  	repo: 'mycomments',
+  	owner: 'luohua13',
+  	admin: ['luohua13'],
+  	id: 'Mon Sep 02 2019 10:42:04 GMT+0800',
+  	distractionFreeMode: 'true'
+})
+gitalk.render('gitalk-container') 
+}
+</script>
+
+  
 
 
 
@@ -236,9 +441,9 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
+		isPost: true,
 		isArchive: false,
-		isTag: true,
+		isTag: false,
 		isCategory: false,
 		open_in_new: true,
 		toc_hide_index: true,

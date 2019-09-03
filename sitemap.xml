@@ -2,6 +2,20 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://yoursite.com/2019/09/02/apiserver/</loc>
+    
+    <lastmod>2019-09-03T07:00:25.120Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://yoursite.com/2019/07/31/client-go/</loc>
+    
+    <lastmod>2019-08-02T08:17:33.590Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://yoursite.com/2019/07/31/kubectl/</loc>
     
     <lastmod>2019-07-31T06:03:02.054Z</lastmod>
