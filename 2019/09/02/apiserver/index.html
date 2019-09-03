@@ -16,7 +16,7 @@
 <meta property="og:site_name" content="luohua">
 <meta property="og:description" content="本章将从kubernetes源码层次，解析apiserver流程中的关键要点。">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-09-03T07:15:44.844Z">
+<meta property="og:updated_time" content="2019-09-03T07:23:46.227Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kubernetes apiserver详解">
 <meta name="twitter:description" content="本章将从kubernetes源码层次，解析apiserver流程中的关键要点。">
@@ -166,7 +166,7 @@
         <p>本章将从kubernetes源码层次，解析apiserver流程中的关键要点。<br><a id="more"></a></p>
 <h3 id="启动流程"><a href="#启动流程" class="headerlink" title="启动流程"></a>启动流程</h3><p>同kubernetes所有的组件启动代码一样，apiserver使用cobra命令行方式启动</p>
 <figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">RunE: <span class="function"><span class="keyword">func</span><span class="params">(cmd *cobra.Command, args []<span class="keyword">string</span>)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">			<span class="comment">// set default options</span></span><br><span class="line">			completedOptions, err := Complete(s)</span><br><span class="line">			<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">				<span class="keyword">return</span> err</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="comment">// validate options</span></span><br><span class="line">			<span class="keyword">if</span> errs := completedOptions.Validate(); <span class="built_in">len</span>(errs) != <span class="number">0</span> &#123;</span><br><span class="line">				<span class="keyword">return</span> utilerrors.NewAggregate(errs)</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">return</span> Run(completedOptions, stopCh)</span><br><span class="line">		&#125;,</span><br></pre></td></tr></table></figure>
-<p>接下来的代码主线：<br>CreateServerChain  –&gt;  CreateKubeAPIServer –&gt; kubeAPIServerConfig.Complete().New()<br>–&gt; m.InstallLegacyAPI  –&gt;  NewLegacyRESTStorage()  –&gt; InstallLegacyAPIGroup  –&gt;<br>    m.InstallAPIs<br>–&gt; installAPIResources  –&gt; InstallREST –&gt;  installer.Install()  –&gt;  registerResourceHandlers</p>
+<p>接下来的代码主线：<br>CreateServerChain  –&gt;  CreateKubeAPIServer –&gt; kubeAPIServerConfig.Complete().New()<br>–&gt; m.InstallLegacyAPI  –&gt;  NewLegacyRESTStorage()  –&gt; InstallLegacyAPIGroup  –&gt;<br>–&gt; installAPIResources  –&gt; InstallREST –&gt;  installer.Install()  –&gt;  registerResourceHandlers</p>
 <p>以上代码主线可以对照源码进行阅读，本文将对其中比较关键的几步进行解析。</p>
 <h3 id="NewLegacyRESTStorage"><a href="#NewLegacyRESTStorage" class="headerlink" title="NewLegacyRESTStorage"></a>NewLegacyRESTStorage</h3><p>通过NewLegacyRESTStorage方法创建各个资源的RESTStorage。RESTStorage是一个结构体，具体的定义在vendor/k8s.io/apiserver/pkg/registry/generic/registry/store.go下，结构体内主要包含NewFunc返回特定资源信息、NewListFunc返回特定资源列表、CreateStrategy特定资源创建时的策略、UpdateStrategy更新时的策略以及DeleteStrategy删除时的策略等重要方法。</p>
 <p>以configmap为例：<br><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">configMapStorage := configmapstore.NewREST(restOptionsGetter)</span><br></pre></td></tr></table></figure></p>
@@ -203,11 +203,9 @@
 </ul>
 <p>下文摘自<a href="https://github.com/kubernetes/sample-apiserver：" target="_blank" rel="noopener">https://github.com/kubernetes/sample-apiserver：</a></p>
 <blockquote>
-<p>You may use this code if you want to build an Extension API Server to use with API Aggregation, or to build a stand-alone Kubernetes-style API server.</p>
+<p>You may use this code if you want to build an Extension API Server to use with API Aggregation, or to build a stand-alone Kubernetes-style API server.<br>However, consider two other options:<br>CRDs: if you just want to add a resource to your kubernetes cluster, then consider using Custom Resource Definition a.k.a CRDs. They require less coding and rebasing. Read about the differences between Custom Resource Definitions vs Extension API Servers here.<br>Apiserver-builder: If you want to build an Extension API server, consider using apiserver-builder instead of this repo. The Apiserver-builder is a complete framework for generating the apiserver, client libraries, and the installation program.</p>
 </blockquote>
-<p>However, consider two other options:</p>
-<p>CRDs: if you just want to add a resource to your kubernetes cluster, then consider using Custom Resource Definition a.k.a CRDs. They require less coding and rebasing. Read about the differences between Custom Resource Definitions vs Extension API Servers here.<br>Apiserver-builder: If you want to build an Extension API server, consider using apiserver-builder instead of this repo. The Apiserver-builder is a complete framework for generating the apiserver, client libraries, and the installation program.</p>
-<p>在下一篇文章中将对扩展Apiserver的构建进行讲解。</p>
+<p>在下一篇文章中将对扩展Apiserver的构建进行讲解，这是众多云计算coder必备的一项技能。</p>
 
       
       
