@@ -6,15 +6,20 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="http://luohua13.cn">
-  <title>Tag: Observer Design Pattern | luohua</title>
+  <title>docker 安装v2ray | luohua</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="luohua">
-<meta property="og:url" content="http://luohua13.cn/tags/Observer-Design-Pattern/index.html">
+  <meta name="description" content="before you begin Have a vps Have a domain Solve your domain to your vps’s IPStart  run v2ray1docker run -d --name v2ray -v /etc/v2ray:/etc/v2ray v2ray/official  v2ray -config=/etc/v2ray/config.json te">
+<meta name="keywords" content="v2ray,caddy,docker">
+<meta property="og:type" content="article">
+<meta property="og:title" content="docker 安装v2ray">
+<meta property="og:url" content="http://luohua13.cn/2019/10/09/v2ray/index.html">
 <meta property="og:site_name" content="luohua">
+<meta property="og:description" content="before you begin Have a vps Have a domain Solve your domain to your vps’s IPStart  run v2ray1docker run -d --name v2ray -v /etc/v2ray:/etc/v2ray v2ray/official  v2ray -config=/etc/v2ray/config.json te">
 <meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-10-09T09:05:38.744Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="luohua">
+<meta name="twitter:title" content="docker 安装v2ray">
+<meta name="twitter:description" content="before you begin Have a vps Have a domain Solve your domain to your vps’s IPStart  run v2ray1docker run -d --name v2ray -v /etc/v2ray:/etc/v2ray v2ray/official  v2ray -config=/etc/v2ray/config.json te">
   
     <link rel="alternative" href="/atom.xml" title="luohua" type="application/atom+xml">
   
@@ -138,75 +143,244 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-v2ray" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2019" class="archive-year">2019</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/07/31/kubectl/" class="archive-article-date">
-  	<time datetime="2019-07-31T02:28:02.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-07-31</time>
-</a>
-        </div>
-    	 
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/07/31/kubectl/">kubernetes源码赏析——kubectl</a>
+    <h1 class="article-title" itemprop="name">
+      docker 安装v2ray
     </h1>
   
 
-        <div class="article-info info-on-right">
-          
+        
+        <a href="/2019/10/09/v2ray/" class="archive-article-date">
+  	<time datetime="2019-10-09T02:28:02.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-10-09</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="before-you-begin"><a href="#before-you-begin" class="headerlink" title="before you begin"></a>before you begin</h2><ul>
+<li>Have a vps</li>
+<li>Have a domain</li>
+<li>Solve your domain to your vps’s IP<h2 id="Start"><a href="#Start" class="headerlink" title="Start"></a>Start</h2></li>
+</ul>
+<h3 id="run-v2ray"><a href="#run-v2ray" class="headerlink" title="run v2ray"></a>run v2ray</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --name v2ray -v /etc/v2ray:/etc/v2ray v2ray/official  v2ray -config=/etc/v2ray/config.json</span><br></pre></td></tr></table></figure>
+<h3 id="test-v2ray-container-IP-and-port"><a href="#test-v2ray-container-IP-and-port" class="headerlink" title="test v2ray container IP and port"></a>test v2ray container IP and port</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">telnet <span class="number">172.17</span><span class="number">.0</span><span class="number">.2</span> <span class="number">8888</span></span><br></pre></td></tr></table></figure>
+<h3 id="run-caddy"><a href="#run-caddy" class="headerlink" title="run caddy"></a>run caddy</h3><p>docker run -d –restart=always -p 80:80 -p 443:443 -v /data/caddy:/caddy –name=caddy blob/caddy -conf=”/caddy/conf/Caddyfile”</p>
+<h3 id="Caddyfile-data-caddy-Caddyfile"><a href="#Caddyfile-data-caddy-Caddyfile" class="headerlink" title="Caddyfile (/data/caddy/Caddyfile)"></a>Caddyfile (/data/caddy/Caddyfile)</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">blog.luohua13.cn &#123;</span><br><span class="line">    gzip</span><br><span class="line">    root /caddy/html/</span><br><span class="line">    index index.html index.htm</span><br><span class="line">    proxy /app00741314 <span class="number">172.17</span><span class="number">.0</span><span class="number">.2</span>:<span class="number">8888</span> &#123;</span><br><span class="line">        websocket</span><br><span class="line">        header_upstream -Origin</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="server端config-json-etc-v2ray-config-json"><a href="#server端config-json-etc-v2ray-config-json" class="headerlink" title="server端config.json (/etc/v2ray/config.json)"></a>server端config.json (/etc/v2ray/config.json)</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">"inbounds"</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">"port"</span>: <span class="number">8888</span>,</span><br><span class="line">      <span class="string">"listen"</span>:<span class="string">"0.0.0.0"</span></span><br><span class="line">      <span class="string">"protocol"</span>: <span class="string">"vmess"</span>,</span><br><span class="line">      <span class="string">"settings"</span>: &#123;</span><br><span class="line">        <span class="string">"clients"</span>: [</span><br><span class="line">          &#123;</span><br><span class="line">            <span class="string">"id"</span>: <span class="string">"b831381d-3434-4d53-ad4f-8cda48b30811"</span>,</span><br><span class="line">            <span class="string">"alterId"</span>: <span class="number">64</span></span><br><span class="line">          &#125;</span><br><span class="line">        ]</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="string">"streamSettings"</span>: &#123;</span><br><span class="line">        <span class="string">"network"</span>: <span class="string">"ws"</span>,</span><br><span class="line">        <span class="string">"wsSettings"</span>: &#123;</span><br><span class="line">        <span class="string">"path"</span>: <span class="string">"/app"</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  ],</span><br><span class="line">  <span class="string">"outbounds"</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">"protocol"</span>: <span class="string">"freedom"</span>,</span><br><span class="line">      <span class="string">"settings"</span>: &#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="client端config-json"><a href="#client端config-json" class="headerlink" title="client端config.json"></a>client端config.json</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">"log"</span>: &#123;</span><br><span class="line">    <span class="string">"error"</span>: <span class="string">""</span>,</span><br><span class="line">    <span class="string">"loglevel"</span>: <span class="string">"info"</span>,</span><br><span class="line">    <span class="string">"access"</span>: <span class="string">""</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">"inbounds"</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">"listen"</span>: <span class="string">"127.0.0.1"</span>,</span><br><span class="line">      <span class="string">"protocol"</span>: <span class="string">"socks"</span>,</span><br><span class="line">      <span class="string">"settings"</span>: &#123;</span><br><span class="line">        <span class="string">"ip"</span>: <span class="string">""</span>,</span><br><span class="line">        <span class="string">"userLevel"</span>: <span class="number">0</span>,</span><br><span class="line">        <span class="string">"timeout"</span>: <span class="number">360</span>,</span><br><span class="line">        <span class="string">"udp"</span>: <span class="literal">false</span>,</span><br><span class="line">        <span class="string">"auth"</span>: <span class="string">"noauth"</span></span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="string">"port"</span>: <span class="string">"1080"</span></span><br><span class="line">    &#125;</span><br><span class="line">  ],</span><br><span class="line">  <span class="string">"outbounds"</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">"mux"</span>: &#123;</span><br><span class="line">        <span class="string">"enabled"</span>: <span class="literal">false</span>,</span><br><span class="line">        <span class="string">"concurrency"</span>: <span class="number">8</span></span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="string">"protocol"</span>: <span class="string">"vmess"</span>,</span><br><span class="line">      <span class="string">"streamSettings"</span>: &#123;</span><br><span class="line">        <span class="string">"wsSettings"</span>: &#123;</span><br><span class="line">          <span class="string">"path"</span>: <span class="string">"/app"</span>,</span><br><span class="line">          <span class="string">"headers"</span>: &#123;</span><br><span class="line">            <span class="string">"host"</span>: <span class="string">""</span></span><br><span class="line">          &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="string">"tlsSettings"</span>: &#123;</span><br><span class="line">          <span class="string">"serverName"</span>: <span class="string">"your domain"</span>,</span><br><span class="line">          <span class="string">"allowInsecure"</span>: <span class="literal">true</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="string">"security"</span>: <span class="string">"tls"</span>,</span><br><span class="line">        <span class="string">"network"</span>: <span class="string">"ws"</span></span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="string">"tag"</span>: <span class="string">"agentout"</span>,</span><br><span class="line">      <span class="string">"settings"</span>: &#123;</span><br><span class="line">        <span class="string">"vnext"</span>: [</span><br><span class="line">          &#123;</span><br><span class="line">            <span class="string">"address"</span>: <span class="string">"your domain"</span>,</span><br><span class="line">            <span class="string">"users"</span>: [</span><br><span class="line">              &#123;</span><br><span class="line">                <span class="string">"id"</span>: <span class="string">"b831381d-3434-4d53-ad4f-8cda48b30811"</span>,</span><br><span class="line">                <span class="string">"alterId"</span>: <span class="number">64</span>,</span><br><span class="line">                <span class="string">"level"</span>: <span class="number">0</span>,</span><br><span class="line">                <span class="string">"security"</span>: <span class="string">"none"</span></span><br><span class="line">              &#125;</span><br><span class="line">            ],</span><br><span class="line">            <span class="string">"port"</span>: <span class="number">443</span></span><br><span class="line">          &#125;</span><br><span class="line">        ]</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">"tag"</span>: <span class="string">"direct"</span>,</span><br><span class="line">      <span class="string">"protocol"</span>: <span class="string">"freedom"</span>,</span><br><span class="line">      <span class="string">"settings"</span>: &#123;</span><br><span class="line">        <span class="string">"domainStrategy"</span>: <span class="string">"AsIs"</span>,</span><br><span class="line">        <span class="string">"redirect"</span>: <span class="string">""</span>,</span><br><span class="line">        <span class="string">"userLevel"</span>: <span class="number">0</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">"tag"</span>: <span class="string">"blockout"</span>,</span><br><span class="line">      <span class="string">"protocol"</span>: <span class="string">"blackhole"</span>,</span><br><span class="line">      <span class="string">"settings"</span>: &#123;</span><br><span class="line">        <span class="string">"response"</span>: &#123;</span><br><span class="line">          <span class="string">"type"</span>: <span class="string">"none"</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  ],</span><br><span class="line">  <span class="string">"dns"</span>: &#123;</span><br><span class="line">    <span class="string">"servers"</span>: [</span><br><span class="line">      <span class="string">""</span></span><br><span class="line">    ]</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">"routing"</span>: &#123;</span><br><span class="line">    <span class="string">"strategy"</span>: <span class="string">"rules"</span>,</span><br><span class="line">    <span class="string">"settings"</span>: &#123;</span><br><span class="line">      <span class="string">"domainStrategy"</span>: <span class="string">"IPIfNonMatch"</span>,</span><br><span class="line">      <span class="string">"rules"</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="string">"outboundTag"</span>: <span class="string">"direct"</span>,</span><br><span class="line">          <span class="string">"type"</span>: <span class="string">"field"</span>,</span><br><span class="line">          <span class="string">"ip"</span>: [</span><br><span class="line">            <span class="string">"geoip:cn"</span>,</span><br><span class="line">            <span class="string">"geoip:private"</span></span><br><span class="line">          ],</span><br><span class="line">          <span class="string">"domain"</span>: [</span><br><span class="line">            <span class="string">"geosite:cn"</span>,</span><br><span class="line">            <span class="string">"geosite:speedtest"</span></span><br><span class="line">          ]</span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">"transport"</span>: &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>小小意思，意思意思～<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/alipay.jpeg">
+                      <span class="reward-type">支付宝</span>
+                    </div>
+                    
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/wechat.jpeg">
+                      <span class="reward-type">微信</span>
+                    </div>
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">kubectl</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">v2ray</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">Observer Design Pattern</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">caddy</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">docker</a>
         		</li>
       		
 		</ul>
 	</div>
 
-          
+      
 	<div class="article-category tagcloud">
 		<i class="icon-book icon"></i>
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="/categories/kubernetes//" class="article-tag-list-link color1">kubernetes</a>
+        			<a href="/categories/网络//" class="article-tag-list-link color3">网络</a>
         		</li>
       		
 		</ul>
 	</div>
 
 
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=http://luohua13.cn/2019/10/09/v2ray/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
+  
+<nav id="article-nav">
   
   
-    </div></section>
+    <a href="/2019/09/02/apiserver/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">kubernetes apiserver详解</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+  
+  
   
 
-    
+  
+
+  
+
+  
+  <div id="gitment-ctn"></div> 
+<link rel="stylesheet" href="//imsun.github.io/gitment/style/default.css">
+<script src="//imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+var gitment = new Gitment({
+  //id: "http://luohua13.cn/2019/10/09/v2ray/",
+  id: 'Wed Oct 09 2019 10:28:02 GMT+0800'
+  owner: 'luohua13',
+  repo: 'mycomments',
+  oauth: {
+    client_id: 'f9b24de571657bb4a896',
+    client_secret: 'f50988d72dc38ddb669097315b4d8c53fde001b6',
+  },
+})
+gitment.render('gitment-ctn')
+</script>
+
+  
+  
+  <div id="gitalk-container" style="padding: 0px 30px 0px 30px;"></div> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+
+if(true){
+	var gitalk = new Gitalk({
+  	clientID: 'a310bf195a3cbfac4138',
+  	clientSecret: '2615a10a35fabc284a5c294904380f979e3e225f',
+  	repo: 'mycomments',
+  	owner: 'luohua13',
+  	admin: ['luohua13'],
+  	id: 'Wed Oct 09 2019 10:28:02 GMT+0800',
+  	distractionFreeMode: 'true'
+})
+gitalk.render('gitalk-container') 
+}
+</script>
+
+  
 
 
 
@@ -236,9 +410,9 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
+		isPost: true,
 		isArchive: false,
-		isTag: true,
+		isTag: false,
 		isCategory: false,
 		open_in_new: true,
 		toc_hide_index: true,
