@@ -8,17 +8,17 @@
   <link rel="dns-prefetch" href="http://luohua13.cn">
   <title>luohua</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="google-site-verification: googlee5321a54a6b382be.html">
-<meta property="og:type" content="website">
+  <meta name="description" content="12345678910runnables []Runnable// Runnable allows a component to be started.type Runnable interface &amp;#123;	// Start starts running the component.  The component will stop running when the channel is c">
+<meta property="og:type" content="article">
 <meta property="og:title" content="luohua">
-<meta property="og:url" content="http://luohua13.cn/googlee5321a54a6b382be.html">
+<meta property="og:url" content="http://luohua13.cn/2019/11/07/kubebuilder/index.html">
 <meta property="og:site_name" content="luohua">
-<meta property="og:description" content="google-site-verification: googlee5321a54a6b382be.html">
+<meta property="og:description" content="12345678910runnables []Runnable// Runnable allows a component to be started.type Runnable interface &amp;#123;	// Start starts running the component.  The component will stop running when the channel is c">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-07-03T07:41:32.286Z">
+<meta property="og:updated_time" content="2019-11-07T08:14:45.207Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="luohua">
-<meta name="twitter:description" content="google-site-verification: googlee5321a54a6b382be.html">
+<meta name="twitter:description" content="12345678910runnables []Runnable// Runnable allows a component to be started.type Runnable interface &amp;#123;	// Start starts running the component.  The component will stop running when the channel is c">
   
     <link rel="alternative" href="/atom.xml" title="luohua" type="application/atom+xml">
   
@@ -154,12 +154,16 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="page-" class="article article-type-page " itemscope itemprop="blogPost">
+            <article id="post-kubebuilder" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
     
     <div class="article-entry" itemprop="articleBody">
       
-        google-site-verification: googlee5321a54a6b382be.html
+        <figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">runnables []Runnable</span><br><span class="line"><span class="comment">// Runnable allows a component to be started.</span></span><br><span class="line"><span class="keyword">type</span> Runnable <span class="keyword">interface</span> &#123;</span><br><span class="line">	<span class="comment">// Start starts running the component.  The component will stop running when the channel is closed.</span></span><br><span class="line">	<span class="comment">// Start blocks until the channel is closed or an error occurs.</span></span><br><span class="line">	Start(&lt;-<span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;) error</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// RunnableFunc implements Runnable</span></span><br><span class="line"><span class="keyword">type</span> RunnableFunc <span class="function"><span class="keyword">func</span><span class="params">(&lt;-<span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;)</span> <span class="title">error</span></span></span><br></pre></td></tr></table></figure>
+<p>func (c *Controller) Start(stop <-chan struct{})-->processNextWorkItem–&gt; c.Do.Reconcile<br>func New(name string, mgr manager.Manager, options Options) (Controller, error) {<br>    c := &amp;controller.Controller{<br>        Do:                      options.Reconciler,<br>        Cache:                   mgr.GetCache(),<br>        Config:                  mgr.GetConfig(),<br>        Scheme:                  mgr.GetScheme(),<br>        Client:                  mgr.GetClient(),<br>        Recorder:                mgr.GetRecorder(name),<br>        Queue:                   workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), name),<br>        MaxConcurrentReconciles: options.MaxConcurrentReconciles,<br>        Name:                    name,<br>    }<br>    return c, mgr.Add(c)<br>}</-chan></p>
+<p><code>`</code>golang<br>resourceLock, err := options.newResourceLock(config, recorderProvider, leaderelection.Options{<br>        LeaderElection:          options.LeaderElection,<br>        LeaderElectionID:        options.LeaderElectionID,<br>        LeaderElectionNamespace: options.LeaderElectionNamespace,<br>    })</p>
+<p>newResourceLock     func(config *rest.Config, recorderProvider recorder.Provider, options leaderelection.Options) (resourcelock.Interface, error)</p>
+
       
       
         <div class="page-reward">
@@ -247,7 +251,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=http://luohua13.cn/googlee5321a54a6b382be.html" alt="微信分享二维码">
+      <img src="//pan.baidu.com/share/qrcode?url=http://luohua13.cn/2019/11/07/kubebuilder/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -259,6 +263,16 @@
 </article>
 
   
+<nav id="article-nav">
+  
+  
+    <a href="/2019/10/21/design-pattern/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">设计模式学习笔记（一）</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
 
 <aside class="wrap-side-operation">
     <div class="mod-side-operation">
@@ -292,8 +306,8 @@
 <script src="//imsun.github.io/gitment/dist/gitment.browser.js"></script>
 <script>
 var gitment = new Gitment({
-  //id: "http://luohua13.cn/googlee5321a54a6b382be.html",
-  id: 'Wed Jul 03 2019 15:56:12 GMT+0800'
+  //id: "http://luohua13.cn/2019/11/07/kubebuilder/",
+  id: 'Thu Nov 07 2019 15:00:20 GMT+0800'
   owner: 'luohua13',
   repo: 'mycomments',
   oauth: {
@@ -319,7 +333,7 @@ if(true){
   	repo: 'mycomments',
   	owner: 'luohua13',
   	admin: ['luohua13'],
-  	id: 'Wed Jul 03 2019 15:56:12 GMT+0800',
+  	id: 'Thu Nov 07 2019 15:00:20 GMT+0800',
   	distractionFreeMode: 'true'
 })
 gitalk.render('gitalk-container') 
@@ -356,7 +370,7 @@ gitalk.render('gitalk-container')
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
+		isPost: true,
 		isArchive: false,
 		isTag: false,
 		isCategory: false,
