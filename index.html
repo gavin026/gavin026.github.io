@@ -152,53 +152,6 @@
           <div id="js-content" class="content-ll">
             
   
-    <article id="post-kubebuilder" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">runnables []Runnable</span><br><span class="line"><span class="comment">// Runnable allows a component to be started.</span></span><br><span class="line"><span class="keyword">type</span> Runnable <span class="keyword">interface</span> &#123;</span><br><span class="line">	<span class="comment">// Start starts running the component.  The component will stop running when the channel is closed.</span></span><br><span class="line">	<span class="comment">// Start blocks until the channel is closed or an error occurs.</span></span><br><span class="line">	Start(&lt;-<span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;) error</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// RunnableFunc implements Runnable</span></span><br><span class="line"><span class="keyword">type</span> RunnableFunc <span class="function"><span class="keyword">func</span><span class="params">(&lt;-<span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;)</span> <span class="title">error</span></span></span><br></pre></td></tr></table></figure>
-<p>func (c *Controller) Start(stop <-chan struct{})-->processNextWorkItem–&gt; c.Do.Reconcile<br>func New(name string, mgr manager.Manager, options Options) (Controller, error) {<br>    c := &amp;controller.Controller{<br>        Do:                      options.Reconciler,<br>        Cache:                   mgr.GetCache(),<br>        Config:                  mgr.GetConfig(),<br>        Scheme:                  mgr.GetScheme(),<br>        Client:                  mgr.GetClient(),<br>        Recorder:                mgr.GetRecorder(name),<br>        Queue:                   workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), name),<br>        MaxConcurrentReconciles: options.MaxConcurrentReconciles,<br>        Name:                    name,<br>    }<br>    return c, mgr.Add(c)<br>}</-chan></p>
-<p><code>`</code>golang<br>resourceLock, err := options.newResourceLock(config, recorderProvider, leaderelection.Options{<br>        LeaderElection:          options.LeaderElection,<br>        LeaderElectionID:        options.LeaderElectionID,<br>        LeaderElectionNamespace: options.LeaderElectionNamespace,<br>    })</p>
-<p>newResourceLock     func(config *rest.Config, recorderProvider recorder.Provider, options leaderelection.Options) (resourcelock.Interface, error)</p>
-
-      
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-
-  
     <article id="post-design-pattern" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
