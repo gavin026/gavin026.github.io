@@ -16,7 +16,7 @@
 <meta property="og:site_name" content="luohua">
 <meta property="og:description" content="Hierarchical Namespace Controller (HNC) 将会带来一种更好的k8s多租户模型。这篇文章将要探索这个项目的当前状态以及一些有用的落地场景。">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2020-10-26T06:29:25.975Z">
+<meta property="og:updated_time" content="2020-10-27T06:29:05.761Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Hierarchical Namespace Controller (HNC):对k8s多租户特性的惊鸿一瞥">
 <meta name="twitter:description" content="Hierarchical Namespace Controller (HNC) 将会带来一种更好的k8s多租户模型。这篇文章将要探索这个项目的当前状态以及一些有用的落地场景。">
@@ -177,14 +177,16 @@
       
         <p>Hierarchical Namespace Controller (HNC) 将会带来一种更好的k8s多租户模型。这篇文章将要探索这个项目的当前状态以及一些有用的落地场景。</p>
 <a id="more"></a>
-<p>Hierarchical Namespace Controller (HNC) 是google公司为了改善k8s多租户体验所驱动的一个项目。到今天为止，k8s的资源由集群级别的资源(namespace)来组织。遗憾的是，安全地将不同用户托管到同一集群中需要高度的自动化知识。HNC通过传递“父namespace” 的配置到所属的”子namespace”的思路，尝试弥补这一遗憾。</p>
+<p>Hierarchical Namespace Controller (HNC) 是google公司为了改善k8s多租户体验所驱动的一个项目。到今天为止，k8s的资源由集群级别的资源(namespace)来组织。遗憾的是，安全地将不同用户托管到同一集群中需要高度的自动化知识。HNC通过传递“parent namespace” 的配置到所属的”child namespace”的思路，尝试弥补这一遗憾。</p>
 <blockquote>
-<p>Hierarchical namespaces 通过创建功能强大的namespace从而使你的集群管理更加容易。例如，你能在你所属团队的team namespace下创建另外的“子namespace”,即使你没有创建集群级别的namespace的权限。这将很轻松的应用策略例如RBAC/Network Policies到你的team namespace下的所有的子namespace   中。</p>
+<p>Hierarchical namespaces 通过创建功能强大的namespace从而使你的集群管理更加容易。例如，你能在你所属团队的team namespace下创建另外的“child namespace”,即使你没有创建集群级别的namespace的权限。这将很轻松的应用策略例如RBAC/Network Policies到你的team namespace下的所有的child namespace 中。</p>
 </blockquote>
 <p>摘自：<a href="https://github.com/kubernetes-sigs/multi-tenancy/tree/hnc-v0.5.1/incubator/hnc" target="_blank" rel="noopener">multi-tenancy sig repository</a></p>
-<p>我们测试了HNC最新的版本(0.5.1), 可以看到很有价值。不幸的是，开发工作最近才开始，尽管社区已经讨论了很长时间。</p>
+<p>我们测试了HNC最新的版本(0.5.1), 可以看到很多有价值的东西。不幸的是，开发工作最近才开始，尽管社区已经讨论了很长时间。</p>
 <p>HNC 在今年应该还不能被正式使用。</p>
-<h3 id="开始"><a href="#开始" class="headerlink" title="开始"></a>开始</h3>
+<h3 id="开始"><a href="#开始" class="headerlink" title="开始"></a>开始</h3><p>感谢HNC 幕后团队出色的工作，使得hnc已经可以在本地用 Kind 命令开发和测试，并且是如此的easy!</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ kind create cluster</span><br><span class="line">$ kubectl apply -f https://github.com/kubernetes-sigs/multi-tenancy/releases/download/hnc-v0.5.1/hnc-manager.yaml</span><br><span class="line"></span><br><span class="line">$ curl -L https://github.com/kubernetes-sigs/multi-tenancy/releases/download/hnc-v0.5.1/kubectl-hns -o ./kubectl-hns</span><br><span class="line"></span><br><span class="line">$ chmod +x ./kubectl-hns</span><br><span class="line"></span><br><span class="line">$ <span class="built_in">export</span> PATH=<span class="variable">$&#123;PWD&#125;</span>:<span class="variable">$&#123;PATH&#125;</span></span><br></pre></td></tr></table></figure>
+
       
       
         <div class="page-reward">
