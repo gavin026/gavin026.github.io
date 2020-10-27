@@ -16,10 +16,13 @@
 <meta property="og:site_name" content="luohua">
 <meta property="og:description" content="Hierarchical Namespace Controller (HNC) 将会带来一种更好的k8s多租户模型。这篇文章将要探索这个项目的当前状态以及一些有用的落地场景。">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2020-10-27T06:29:05.761Z">
+<meta property="og:image" content="http://luohua13.cn/image/hnc-1.jpeg">
+<meta property="og:image" content="http://luohua13.cn/image/hnc-2.jpeg">
+<meta property="og:updated_time" content="2020-10-27T08:32:57.602Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Hierarchical Namespace Controller (HNC):对k8s多租户特性的惊鸿一瞥">
 <meta name="twitter:description" content="Hierarchical Namespace Controller (HNC) 将会带来一种更好的k8s多租户模型。这篇文章将要探索这个项目的当前状态以及一些有用的落地场景。">
+<meta name="twitter:image" content="http://luohua13.cn/image/hnc-1.jpeg">
   
     <link rel="alternative" href="/atom.xml" title="luohua" type="application/atom+xml">
   
@@ -184,8 +187,46 @@
 <p>摘自：<a href="https://github.com/kubernetes-sigs/multi-tenancy/tree/hnc-v0.5.1/incubator/hnc" target="_blank" rel="noopener">multi-tenancy sig repository</a></p>
 <p>我们测试了HNC最新的版本(0.5.1), 可以看到很多有价值的东西。不幸的是，开发工作最近才开始，尽管社区已经讨论了很长时间。</p>
 <p>HNC 在今年应该还不能被正式使用。</p>
-<h3 id="开始"><a href="#开始" class="headerlink" title="开始"></a>开始</h3><p>感谢HNC 幕后团队出色的工作，使得hnc已经可以在本地用 Kind 命令开发和测试，并且是如此的easy!</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ kind create cluster</span><br><span class="line">$ kubectl apply -f https://github.com/kubernetes-sigs/multi-tenancy/releases/download/hnc-v0.5.1/hnc-manager.yaml</span><br><span class="line"></span><br><span class="line">$ curl -L https://github.com/kubernetes-sigs/multi-tenancy/releases/download/hnc-v0.5.1/kubectl-hns -o ./kubectl-hns</span><br><span class="line"></span><br><span class="line">$ chmod +x ./kubectl-hns</span><br><span class="line"></span><br><span class="line">$ <span class="built_in">export</span> PATH=<span class="variable">$&#123;PWD&#125;</span>:<span class="variable">$&#123;PATH&#125;</span></span><br></pre></td></tr></table></figure>
+<h2 id="准备开始"><a href="#准备开始" class="headerlink" title="准备开始"></a>准备开始</h2><p>你必须拥有一个 Kubernetes 的集群，同时你的 Kubernetes 集群必须带有 kubectl 命令行工具。 如果你还没有集群，你可以通过 Minikube 构建一个你自己的集群。</p>
+<h2 id="开始"><a href="#开始" class="headerlink" title="开始"></a>开始</h2><p>感谢HNC 幕后团队出色的工作，使得hnc已经可以在本地开发和测试，并且是如此的easy!</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl apply -f https://github.com/kubernetes-sigs/multi-tenancy/releases/download/hnc-v0.5.1/hnc-manager.yaml</span><br><span class="line"></span><br><span class="line">$ curl -L https://github.com/kubernetes-sigs/multi-tenancy/releases/download/hnc-v0.5.1/kubectl-hns -o ./kubectl-hns</span><br><span class="line"></span><br><span class="line">$ chmod +x ./kubectl-hns</span><br><span class="line"></span><br><span class="line">$ <span class="built_in">export</span> PATH=<span class="variable">$&#123;PWD&#125;</span>:<span class="variable">$&#123;PATH&#125;</span></span><br></pre></td></tr></table></figure>
+<p>然后你可以开始测试：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">$ kubectl create ns hnc-parent</span><br><span class="line">namespace/hnc-parent created</span><br><span class="line">$ kubectl create ns hnc-child-1</span><br><span class="line">namespace/hnc-child-1 created</span><br><span class="line">$ kubectl create ns hnc-child-2</span><br><span class="line">namespace/hnc-child-2 created</span><br><span class="line"></span><br><span class="line">$ kubectl hns <span class="built_in">set</span> hnc-child-1 -p hnc-parent</span><br><span class="line">Setting the parent of hnc-child-1 to hnc-parent</span><br><span class="line">Succesfully updated 1 property of the hierarchical configuration of hnc-child-1</span><br><span class="line">$ kubectl hns <span class="built_in">set</span> hnc-child-2 -p hnc-parent</span><br><span class="line">Setting the parent of hnc-child-2 to hnc-parent</span><br><span class="line">Succesfully updated 1 property of the hierarchical configuration of hnc-child-2</span><br><span class="line"></span><br><span class="line">$ kubectl hns tree -A</span><br><span class="line">default</span><br><span class="line">hnc-parent</span><br><span class="line">├── hnc-child-1</span><br><span class="line">└── hnc-child-2</span><br><span class="line">hnc-system</span><br><span class="line">kube-node-lease</span><br><span class="line">kube-public</span><br><span class="line">kube-system</span><br><span class="line"><span class="built_in">local</span>-path-storage</span><br></pre></td></tr></table></figure>
+<p>默认情况下， parent namespace下的所属的Role 和 RoleBinding 对象会传递给 child 命名空间对象。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">$ kubectl create role pod-reader --verb=get --verb=list --verb=watch --resource=pods -n hnc-parent</span><br><span class="line">role.rbac.authorization.k8s.io/pod-reader created</span><br></pre></td></tr></table></figure>
+<p>所以，让我们验证下 hnc-child-{1,2} 命名空间下是否能看到相同的 role：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">$ kubectl get role -n hnc-child-1 --show-labels</span><br><span class="line">NAME         CREATED AT             LABELS</span><br><span class="line">pod-reader   2020-08-24T08:13:00Z   hnc.x-k8s.io/inheritedFrom=hnc-parent</span><br><span class="line">$ kubectl get role -n hnc-child-2 --show-labels</span><br><span class="line">NAME         CREATED AT             LABELS</span><br><span class="line">pod-reader   2020-08-24T08:13:00Z   hnc.x-k8s.io/inheritedFrom=hnc-parent</span><br></pre></td></tr></table></figure>
+<p>怎么样？够酷炫吧！它能满足我们很多年梦寐以求的使用场景。</p>
+<h2 id="使用案例"><a href="#使用案例" class="headerlink" title="使用案例"></a>使用案例</h2><p>kubernetes 是 SIGHUP 业务的核心部分。我们在很多大规模的公司工作，因为k8s没有多租户特性使我们遇到了很多难以解决的挑战。</p>
+<p>在这篇文章中将展示 HNC 两种不同的使用案例。</p>
+<h3 id="Namespace-自给（self-provisioning）"><a href="#Namespace-自给（self-provisioning）" class="headerlink" title="Namespace 自给（self provisioning）"></a>Namespace 自给（self provisioning）</h3><p>有时开发者为了开发的工作需要创建新的 namespace。因为 namespace是集群级别的对象，集群管理员需要赋予开发者相应的权限。在赋予创建 namespace的权限之后，你（作为集群管理员）可能还想附加一些默认的配置，例如：</p>
+<ul>
+<li>NetworkPolicies </li>
+<li>Roles and RoleBindings</li>
+<li>ResourceQuotas</li>
+<li>LimitRanges</li>
+</ul>
+<p>否则，你将很快面临一个混乱的集群。那么你该怎么办呢？</p>
+<p>HNC 能满足这个使用场景。你可以定义一个 parent 命名空间，所有的对象在 其 child 命名空间下， 并且不要去手动传递对象。换句话说，就是开发者不需要有任何的集群级别权限。使用 HNC时，你需要被赋予在 parent命名空间下管理 child命名空间的权限。</p>
+<p><img src="/image/hnc-1.jpeg" alt="setup flow"></p>
+<p>关于这个场景如果你想了解更多，<a href="https://github.com/sighupio/hnc-example-use-cases/blob/master/use-cases/self-provision/README.md" target="_blank" rel="noopener">follow our guide.</a></p>
+<h3 id="应用模版"><a href="#应用模版" class="headerlink" title="应用模版"></a>应用模版</h3><p>之前的使用案例集中在配置命名空间的管理。接下来这个案例将更进一步。假定你是一个多层应用的owner：</p>
+<ul>
+<li>Frontend</li>
+<li>Backend</li>
+<li>DB</li>
+</ul>
+<p>如果你要开发一个新的 Frontend feature，你能受益于有一个完整的 Backend 模版，用来在一个稳定和隔离的环境来测试你的 Frontend change!</p>
+<p>在这个案例中，你可以在 parent 命名空间下定义如下公有的应用组件：</p>
+<ul>
+<li>DB Deployments and Services</li>
+<li>Backend Deployments and Services</li>
+<li>Frontend Services</li>
+</ul>
+<p><img src="/image/hnc-2.jpeg" alt="setup flow"></p>
+<p><strong>重要提示：</strong> 不要把  frontend deployment 放在parent 命名空间中。你需要的修改不应该在 parent 命名空间</p>
+<p>然后创建一个 child 命名空间，将你的 修改的frontend deployment 放在这个命名空间下。<br>关于这个场景如果你想了解更多，<a href="https://github.com/sighupio/hnc-example-use-cases/blob/master/use-cases/application-template/README.md" target="_blank" rel="noopener">follow our guide.</a></p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>HNC 尝试去弥补k8s的多租户特性缺失的遗憾。这个underlying的想法是一个足够好的出发点。它需要更多来自社区的爱和众多开发者的反馈。</p>
 
       
       
